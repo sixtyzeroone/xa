@@ -460,7 +460,101 @@ EOT
 
 # GRUB
 grub-install --target=i386-pc --recheck "$TARGET_DISK" || grub-install "$TARGET_DISK" || echo "WARNING: GRUB install mungkin gagal, cek manual nanti"
-grub-mkconfig -o /boot/grub/grub.cfg
+
+
+cat > /boot/grub/grub.cfg <<'GRUBEOF'
+# LeakOS GRUB manual configuration
+set default=0
+set timeout=5
+
+# Set menu colors
+set menu_color_normal=cyan/blue
+set menu_color_highlight=white/blue
+
+# Load graphics
+insmod all_video
+insmod gfxterm
+insmod png
+insmod ext2
+insmod part_msdos
+
+# Set background
+if background_image /boot/grub/leakos.png; then
+  set color_normal=white/black
+  set color_highlight=black/white
+else
+  set color_normal=cyan/blue
+  set color_highlight=white/blue
+fi
+
+# Terminal output
+terminal_output gfxterm
+
+# Main menu entry
+menuentry "LeakOS Linux" {
+    insmod ext2
+    insmod part_msdos
+    search --no-floppy --fs-uuid --set=root $ROOT_UUID
+    echo "Loading Linux kernel..."
+    linux /boot/vmlinuz-$KERNEL_VERSION root=UUID=$ROOT_UUID ro quiet splash loglevel=3
+    echo "Loading initial ramdisk..."
+    initrd /boot/initrd.img-$KERNEL_VERSION
+}
+
+menuentry "LeakOS Linux (Recovery Mode)" {
+    insmod ext2
+    insmod part_msdos
+    search --no-floppy --fs-uuid --set=root $ROOT_UUID
+    echo "Loading Linux kernel (recovery)..."
+    linux /boot/vmlinuz-$KERNEL_VERSION root=UUID=$ROOT_UUID ro single
+    echo "Loading initial ramdisk..."
+    initrd /boot/initrd.img-$KERNEL_VERSION
+}
+
+menuentry "LeakOS Linux (Verbose Mode)" {
+    insmod ext2
+    insmod part_msdos
+    search --no-floppy --fs-uuid --set=root $ROOT_UUID
+    echo "Loading Linux kernel (verbose)..."
+    linux /boot/vmlinuz-$KERNEL_VERSION root=UUID=$ROOT_UUID ro loglevel=7
+    echo "Loading initial ramdisk..."
+    initrd /boot/initrd.img-$KERNEL_VERSION
+}
+
+menuentry "Reboot" {
+    reboot
+}
+
+menuentry "Shutdown" {
+    halt
+}
+
+# Submenu untuk tools
+submenu "LeakOS Tools" {
+    menuentry "Memory Test (memtest86+)" {
+        insmod ext2
+        insmod part_msdos
+        search --no-floppy --fs-uuid --set=root $ROOT_UUID
+        linux /boot/memtest86+.bin
+    }
+    
+    menuentry "System Information" {
+        insmod ext2
+        insmod part_msdos
+        search --no-floppy --fs-uuid --set=root $ROOT_UUID
+        echo "Gathering system information..."
+        linux /boot/vmlinuz-$KERNEL_VERSION root=UUID=$ROOT_UUID ro single init=/bin/bash
+    }
+}
+GRUBEOF
+
+# Ganti placeholder dengan nilai sebenarnya
+sed -i "s/\$ROOT_UUID/$ROOT_UUID/g" /boot/grub/grub.cfg
+sed -i "s/\$KERNEL_VERSION/$KERNEL_VERSION/g" /boot/grub/grub.cfg
+
+echo "GRUB configuration created manually at /boot/grub/grub.cfg"
+
+
 
 # Download pentest tools jika dipilih
 if [ ${#SELECTED_CATEGORIES[@]} -gt 0 ]; then
