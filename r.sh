@@ -692,6 +692,7 @@ EOT
 
 grub-install --target=i386-pc --recheck "$TARGET_DISK" || grub-install "$TARGET_DISK" || echo "WARNING: GRUB install mungkin gagal"
 
+ROOT_UUID=\$(blkid -s UUID -o value "$ROOT_PART")
 
 cat > /boot/grub/grub.cfg <<'GRUBEOF'
 # LeakOS GRUB Configuration - Shadow Edition
@@ -701,12 +702,12 @@ set timeout=5
 
 menuentry "LeakOS V1 (Celuluk)" {
     search --no-floppy --fs-uuid --set=root $ROOT_UUID
-    linux /boot/vmlinuz root=UUID=$ROOT_UUID ro quiet splash
+    linux /boot/vmlinuz root=UUID=\$ROOT_UUID ro quiet splash
 }
 
 menuentry "LeakOS V1 (Celuluk) - Recovery" {
     search --no-floppy --fs-uuid --set=root $ROOT_UUID
-    linux /boot/vmlinuz root=UUID=$ROOT_UUID ro single
+    linux /boot/vmlinuz root=UUID=\$ROOT_UUID ro single
 }
 GRUBEOF
 # Download tools jika dipilih
