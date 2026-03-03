@@ -293,14 +293,185 @@ if [ "$PASSWORD" != "$PASSWORD2" ] || [ -z "$PASSWORD" ]; then
     exit 1
 fi
 
-echo ""
-echo -n "Timezone (contoh: Asia/Jakarta) - Enter untuk default: "
-read -r TIMEZONE
-TIMEZONE=${TIMEZONE:-Asia/Jakarta}
-if [ ! -f "/usr/share/zoneinfo/$TIMEZONE" ]; then
-    echo -e "${YELLOW}Timezone tidak ditemukan, pakai default Asia/Jakarta${NC}"
-    TIMEZONE="Asia/Jakarta"
-fi
+# =============================================================================
+# TIMEZONE SELECTION - VERSI PINTAR
+# =============================================================================
+get_timezone() {
+    echo ""
+    echo -e "${BLUE}╔════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${BLUE}║                    SETTING ZONA WAKTU                      ║${NC}"
+    echo -e "${BLUE}╚════════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+
+    # Deteksi otomatis berdasarkan IP/lokasi (jika ada internet)
+    if ping -c 1 google.com >/dev/null 2>&1; then
+        echo -e "${CYAN}Mendeteksi zona waktu otomatis...${NC}"
+        AUTO_TZ=$(curl -s http://ip-api.com/line?fields=timezone 2>/dev/null || echo "")
+        
+        if [ -n "$AUTO_TZ" ] && [ -f "/usr/share/zoneinfo/$AUTO_TZ" ]; then
+            echo -e "${GREEN}✅ Terdeteksi: $AUTO_TZ${NC}"
+            echo -n "Gunakan zona ini? (Y/n): "
+            read -r use_auto
+            if [[ "$use_auto" == "y" ]] || [[ "$use_auto" == "Y" ]] || [[ -z "$use_auto" ]]; then
+                TIMEZONE="$AUTO_TZ"
+                echo -e "${GREEN}✅ Timezone: $TIMEZONE${NC}"
+                return
+            fi
+        fi
+    fi
+
+    # Pilihan manual
+    echo ""
+    echo "Pilih berdasarkan region:"
+    echo " 1) Asia (Indonesia, Singapore, Jepang, dll)"
+    echo " 2) Australia & Pasifik"
+    echo " 3) Eropa"
+    echo " 4) Amerika"
+    echo " 5) Afrika"
+    echo " 6) UTC / GMT"
+    echo " 7) Manual input"
+    echo ""
+
+    read -r region
+
+    case $region in
+        1) 
+            echo ""
+            echo "Pilih kota di Asia:"
+            echo " 1) Jakarta      (WIB)"
+            echo " 2) Makassar     (WITA)"
+            echo " 3) Jayapura     (WIT)"
+            echo " 4) Singapore"
+            echo " 5) Kuala Lumpur"
+            echo " 6) Bangkok"
+            echo " 7) Tokyo"
+            echo " 8) Seoul"
+            echo " 9) Shanghai"
+            echo "10) Manila"
+            echo "11) Taipei"
+            echo "12) Hong Kong"
+            echo -n "Pilih: "
+            read -r city
+            case $city in
+                1) TIMEZONE="Asia/Jakarta" ;;
+                2) TIMEZONE="Asia/Makassar" ;;
+                3) TIMEZONE="Asia/Jayapura" ;;
+                4) TIMEZONE="Asia/Singapore" ;;
+                5) TIMEZONE="Asia/Kuala_Lumpur" ;;
+                6) TIMEZONE="Asia/Bangkok" ;;
+                7) TIMEZONE="Asia/Tokyo" ;;
+                8) TIMEZONE="Asia/Seoul" ;;
+                9) TIMEZONE="Asia/Shanghai" ;;
+                10) TIMEZONE="Asia/Manila" ;;
+                11) TIMEZONE="Asia/Taipei" ;;
+                12) TIMEZONE="Asia/Hong_Kong" ;;
+                *) TIMEZONE="Asia/Jakarta" ;;
+            esac
+            ;;
+        2)
+            echo ""
+            echo "Pilih kota di Australia/Pasifik:"
+            echo " 1) Perth"
+            echo " 2) Darwin"
+            echo " 3) Brisbane"
+            echo " 4) Sydney"
+            echo " 5) Melbourne"
+            echo " 6) Guam"
+            echo -n "Pilih: "
+            read -r city
+            case $city in
+                1) TIMEZONE="Australia/Perth" ;;
+                2) TIMEZONE="Australia/Darwin" ;;
+                3) TIMEZONE="Australia/Brisbane" ;;
+                4) TIMEZONE="Australia/Sydney" ;;
+                5) TIMEZONE="Australia/Melbourne" ;;
+                6) TIMEZONE="Pacific/Guam" ;;
+                *) TIMEZONE="Australia/Sydney" ;;
+            esac
+            ;;
+        3)
+            echo ""
+            echo "Pilih kota di Eropa:"
+            echo " 1) London"
+            echo " 2) Paris"
+            echo " 3) Berlin"
+            echo " 4) Amsterdam"
+            echo " 5) Rome"
+            echo " 6) Madrid"
+            echo -n "Pilih: "
+            read -r city
+            case $city in
+                1) TIMEZONE="Europe/London" ;;
+                2) TIMEZONE="Europe/Paris" ;;
+                3) TIMEZONE="Europe/Berlin" ;;
+                4) TIMEZONE="Europe/Amsterdam" ;;
+                5) TIMEZONE="Europe/Rome" ;;
+                6) TIMEZONE="Europe/Madrid" ;;
+                *) TIMEZONE="Europe/London" ;;
+            esac
+            ;;
+        4)
+            echo ""
+            echo "Pilih zona di Amerika:"
+            echo " 1) New York (Eastern)"
+            echo " 2) Chicago (Central)"
+            echo " 3) Denver (Mountain)"
+            echo " 4) Los Angeles (Pacific)"
+            echo " 5) Anchorage"
+            echo " 6) Honolulu"
+            echo -n "Pilih: "
+            read -r city
+            case $city in
+                1) TIMEZONE="America/New_York" ;;
+                2) TIMEZONE="America/Chicago" ;;
+                3) TIMEZONE="America/Denver" ;;
+                4) TIMEZONE="America/Los_Angeles" ;;
+                5) TIMEZONE="America/Anchorage" ;;
+                6) TIMEZONE="Pacific/Honolulu" ;;
+                *) TIMEZONE="America/New_York" ;;
+            esac
+            ;;
+        5)
+            echo ""
+            echo "Pilih kota di Afrika:"
+            echo " 1) Cairo"
+            echo " 2) Johannesburg"
+            echo " 3) Lagos"
+            echo " 4) Nairobi"
+            echo -n "Pilih: "
+            read -r city
+            case $city in
+                1) TIMEZONE="Africa/Cairo" ;;
+                2) TIMEZONE="Africa/Johannesburg" ;;
+                3) TIMEZONE="Africa/Lagos" ;;
+                4) TIMEZONE="Africa/Nairobi" ;;
+                *) TIMEZONE="Africa/Johannesburg" ;;
+            esac
+            ;;
+        6)
+            TIMEZONE="UTC"
+            ;;
+        7)
+            echo -n "Masukkan zona waktu (Contoh: Asia/Jakarta): "
+            read -r TIMEZONE
+            ;;
+        *)
+            TIMEZONE="Asia/Jakarta"
+            ;;
+    esac
+
+    # Validasi
+    if [ ! -f "/usr/share/zoneinfo/$TIMEZONE" ]; then
+        echo -e "${YELLOW}⚠️  Zona '$TIMEZONE' tidak valid, menggunakan Asia/Jakarta${NC}"
+        TIMEZONE="Asia/Jakarta"
+    fi
+
+    echo -e "${GREEN}✅ Timezone: $TIMEZONE${NC}"
+    echo ""
+}
+
+# Panggil fungsi
+get_timezone
 
 # =============================================================================
 # KEYBOARD LAYOUT SELECTION - VERSI SEDERHANA
