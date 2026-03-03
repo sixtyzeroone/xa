@@ -48,24 +48,21 @@ echo ""
 # =============================================================================
 # PERINGATAN AWAL
 # =============================================================================
-echo "⚠️  PERINGATAN KRITIS:"
+echo "⚠️ PERINGATAN KRITIS:"
 echo "• SEMUA DATA DI DISK TARGET AKAN DIHAPUS SELAMANYA"
-echo "• Hanya gunakan pada mesin kosong atau VM TEST"
-echo "• Tidak ada UNDO setelah konfirmasi"
+echo "• Hanya gunakan pada VM TEST (jangan host real!)"
 echo ""
 echo "Lanjut instalasi? (ketik 'yes' lalu Enter)"
 read -r confirm
 if [[ "$confirm" != "yes" ]]; then
-    echo "Instalasi dibatalkan oleh pengguna."
     exit 0
 fi
 
 # =============================================================================
-# DISK SELECTION - BAGIAN YANG DIPERBAIKI
+# DISK SELECTION
 # =============================================================================
 echo ""
-echo "Disk yang terdeteksi (hanya hard disk fisik):"
-echo "------------------------------------------------"
+echo "Disk yang terdeteksi:"
 disk_list=()
 i=1
 while IFS= read -r line; do
@@ -78,97 +75,96 @@ while IFS= read -r line; do
 done < <(lsblk -dno NAME,SIZE,MODEL | awk '$1~/^[a-z]+$/ && $1!="loop" && $1!="sr" && $1!="zram"')
 
 if [ ${#disk_list[@]} -eq 0 ]; then
-    echo "ERROR: Tidak ada disk fisik yang terdeteksi."
-    echo "Cek dengan 'lsblk' atau konfigurasi VM Anda."
+    echo "ERROR: Tidak ada disk terdeteksi."
     exit 1
 fi
 
 if [ ${#disk_list[@]} -eq 1 ]; then
-    echo "(Hanya 1 disk terdeteksi → otomatis terpilih)"
     TARGET_DISK="${disk_list[0]}"
+    echo "Hanya 1 disk → otomatis: $TARGET_DISK"
 else
-    echo ""
-    echo -n "Pilih nomor disk target (1-${#disk_list[@]}) : "
+    echo -n "Pilih nomor (1-${#disk_list[@]}) : "
     read -r disk_num
-
     if ! [[ "$disk_num" =~ ^[0-9]+$ ]] || [ "$disk_num" -lt 1 ] || [ "$disk_num" -gt "${#disk_list[@]}" ]; then
-        echo "ERROR: Nomor tidak valid. Harus antara 1 sampai ${#disk_list[@]}"
+        echo "ERROR: Nomor tidak valid."
         exit 1
     fi
-
     TARGET_DISK="${disk_list[$((disk_num-1))]}"
 fi
 
-echo ""
-echo "Disk terpilih       : $TARGET_DISK"
-echo "SEMUA DATA AKAN HILANG!"
-echo "Yakin ingin lanjut? (ketik 'yes')"
+echo "Disk terpilih: $TARGET_DISK"
+echo "Yakin? (yes)"
 read -r confirm_disk
-if [[ "$confirm_disk" != "yes" ]]; then
-    echo "Dibatalkan."
-    exit 0
-fi
+[[ "$confirm_disk" != "yes" ]] && exit 0
 
 # =============================================================================
 # PARTITIONING
 # =============================================================================
 echo ""
-echo "Langkah 1: Partisi disk"
 echo "Membuka cfdisk untuk $TARGET_DISK"
-echo "Rekomendasi: tabel 'dos' (MBR), buat minimal 1 partisi ext4 (bootable jika BIOS)"
-echo ""
-echo "Siap membuka cfdisk? (ketik 'yes')"
+echo "Rekomendasi: buat 1 partisi primary full disk, type Linux (83), set Bootable, lalu [Write] yes"
+echo "Siap? (yes)"
 read -r confirm_cfdisk
-if [[ "$confirm_cfdisk" != "yes" ]]; then
-    echo "Dibatalkan sebelum partisi."
-    exit 0
-fi
+[[ "$confirm_cfdisk" != "yes" ]] && exit 0
 
 cfdisk "$TARGET_DISK"
-echo "Partisi selesai. Memperbarui tabel partisi..."
+
+echo "Partisi selesai. Force refresh tabel partisi (penting di VirtualBox)..."
 partprobe "$TARGET_DISK" || true
-sync
-sleep 3
+blockdev --rereadpt "$TARGET_DISK" || true
+sleep 5
+partprobe "$TARGET_DISK" || true
+blockdev --rereadpt "$TARGET_DISK" || true
+sleep 5
+
+echo ""
+echo "Cek status partisi sekarang:"
+lsblk -f "$TARGET_DISK"
+fdisk -l "$TARGET_DISK"
 
 # =============================================================================
-# DETECT & PILIH ROOT PARTITION
+# DETECT ROOT PARTITION
 # =============================================================================
 echo ""
-echo "Mencari partisi ext4 yang tersedia..."
+echo "Mencari partisi ext4..."
 mapfile -t ext4_parts < <(lsblk -ln -o NAME,FSTYPE "$TARGET_DISK" | awk '$2=="ext4"{print "/dev/"$1}')
 
 if [ ${#ext4_parts[@]} -eq 0 ]; then
-    echo "ERROR: Tidak ada partisi ext4 yang ditemukan di $TARGET_DISK"
-    echo "Pastikan sudah buat & format partisi sebagai ext4 di cfdisk."
-    echo "Output lsblk untuk bantuan:"
-    lsblk -f "$TARGET_DISK"
+    echo "WARNING: Masih tidak ada ext4 terdeteksi! (umum di VM)"
+    echo "Coba reboot VM sekali, lalu jalankan installer lagi."
+    echo "Atau force create partisi sda1 full disk? (hati-hati!)"
+    read -r -p "Force create sda1 sekarang? (yes/no): " force_create
+    if [[ "$force_create" == "yes" ]]; then
+        echo "Auto create partisi primary 1 full disk..."
+        (echo n; echo p; echo 1; echo ; echo ; echo t; echo 83; echo a; echo 1; echo w) | fdisk "$TARGET_DISK"
+        partprobe "$TARGET_DISK"
+        blockdev --rereadpt "$TARGET_DISK"
+        sleep 5
+        mapfile -t ext4_parts < <(lsblk -ln -o NAME,FSTYPE "$TARGET_DISK" | awk '$2=="ext4"{print "/dev/"$1}')
+    fi
+fi
+
+if [ ${#ext4_parts[@]} -eq 0 ]; then
+    echo "ERROR: Tetap tidak ada partisi ext4."
+    echo "Reboot VM, cek lagi dengan lsblk -f /dev/sda"
     exit 1
 fi
 
 if [ ${#ext4_parts[@]} -eq 1 ]; then
     ROOT_PART="${ext4_parts[0]}"
-    echo "Partisi root otomatis terpilih: $ROOT_PART"
 else
-    echo "Ditemukan beberapa partisi ext4:"
+    # Pilih kalau banyak
     for idx in "${!ext4_parts[@]}"; do
         printf "%d) %s\n" $((idx+1)) "${ext4_parts[idx]}"
     done
-    echo -n "Pilih nomor partisi root (1-${#ext4_parts[@]}) : "
     read -r part_choice
-    if ! [[ "$part_choice" =~ ^[0-9]+$ ]] || [ "$part_choice" -lt 1 ] || [ "$part_choice" -gt "${#ext4_parts[@]}" ]; then
-        echo "ERROR: Pilihan tidak valid."
-        exit 1
-    fi
     ROOT_PART="${ext4_parts[$((part_choice-1))]}"
 fi
 
 echo "Partisi root: $ROOT_PART"
-echo "Format ulang partisi ini? (DATA HILANG PERMANEN!) (ketik 'yes')"
+echo "Format ulang? (yes - DATA HILANG!)"
 read -r confirm_format
-if [[ "$confirm_format" != "yes" ]]; then
-    echo "Dibatalkan sebelum format."
-    exit 0
-fi
+[[ "$confirm_format" != "yes" ]] && exit 0
 
 # =============================================================================
 # INPUT USER & KONFIGURASI DASAR
