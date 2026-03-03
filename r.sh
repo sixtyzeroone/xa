@@ -692,40 +692,23 @@ EOT
 
 grub-install --target=i386-pc --recheck "$TARGET_DISK" || grub-install "$TARGET_DISK" || echo "WARNING: GRUB install mungkin gagal"
 
+
 cat > /boot/grub/grub.cfg <<'GRUBEOF'
-# LeakOS GRUB manual configuration
+# LeakOS GRUB Configuration - Shadow Edition
+
 set default=0
 set timeout=5
 
-set menu_color_normal=cyan/blue
-set menu_color_highlight=white/blue
-
-insmod all_video
-insmod gfxterm
-insmod png
-insmod ext2
-insmod part_msdos
-
-if background_image /boot/grub/leakos.png; then
-  set color_normal=white/black
-  set color_highlight=black/white
-else
-  set color_normal=cyan/blue
-  set color_highlight=white/blue
-fi
-
-terminal_output gfxterm
-
-menuentry "LeakOS Linux" {
-    insmod ext2
-    insmod part_msdos
-    search --no-floppy --fs-uuid --set=root \$ROOT_UUID
-    linux /boot/vmlinuz root=UUID=\$ROOT_UUID ro quiet splash loglevel=3
+menuentry "LeakOS V1 (Celuluk)" {
+    search --no-floppy --fs-uuid --set=root $ROOT_UUID
+    linux /boot/vmlinuz root=UUID=$ROOT_UUID ro quiet splash
 }
 
-# (tambahkan menuentry lain sesuai kebutuhan)
+menuentry "LeakOS V1 (Celuluk) - Recovery" {
+    search --no-floppy --fs-uuid --set=root $ROOT_UUID
+    linux /boot/vmlinuz root=UUID=$ROOT_UUID ro single
+}
 GRUBEOF
-
 # Download tools jika dipilih
 if [ ${#SELECTED_CATEGORIES[@]} -gt 0 ]; then
     mkdir -p /opt/pentest-tools
