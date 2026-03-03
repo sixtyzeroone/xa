@@ -428,7 +428,7 @@ echo "%wheel ALL=(ALL) ALL" > /etc/sudoers.d/wheel 2>/dev/null || echo "$USERNAM
 # Locale
 echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
 echo "id_ID.UTF-8 UTF-8" >> /etc/locale.gen
-locale-gen 2>/dev/null || true
+
 echo "LANG=en_US.UTF-8" > /etc/locale.conf
 
 # Keyboard
