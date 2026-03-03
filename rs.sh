@@ -491,7 +491,7 @@ fi
 CATEGORIES_STRING="${SELECTED_CATEGORIES[*]}"
 
 # ROOT_UUID harus didefinisikan DI DALAM chroot
-ROOT_UUID=\$(blkid -s UUID -o value "$ROOT_PART")
+ROOT_UUID=$(blkid -s UUID -o value "$ROOT_PART")
 
 chroot /mnt/leakos /bin/bash <<EOF
 set -e
