@@ -302,45 +302,76 @@ if [ ! -f "/usr/share/zoneinfo/$TIMEZONE" ]; then
     TIMEZONE="Asia/Jakarta"
 fi
 
-# Keyboard layout (sama seperti asli)
-echo ""
-echo "Pilih layout keyboard:"
-echo " 1) us  2) id  3) fr  4) de  5) es  6) it  7) pt  8) gb"
-echo " 9) se 10) no 11) dk 12) fi 13) pl 14) ru 15) ua 16) cz"
-echo "17) tr 18) cn 19) jp 20) kr 21) vn 22) br 23) ph 24) sg"
-echo "25) lain (masukkan manual)"
-echo -n "Pilihan (default: 1 = us) : "
+# =============================================================================
+# KEYBOARD LAYOUT - Versi lebih rapi & terstruktur
+# =============================================================================
+echo -e ""
+echo -e "${BLUE}Pilih layout keyboard:${NC}"
+echo -e "──────────────────────────────────────────────────────────────"
+
+# Grup 1: Umum & Indonesia
+echo -e "  ${CYAN}1${NC}) us      ${CYAN}2${NC}) id      ${CYAN}3${NC}) gb      ${CYAN}4${NC}) fr"
+echo -e "  ${CYAN}5${NC}) de      ${CYAN}6${NC}) es      ${CYAN}7${NC}) it      ${CYAN}8${NC}) pt"
+
+# Grup 2: Eropa Utara & Timur
+echo -e "  ${CYAN}9${NC}) se     ${CYAN}10${NC}) no     ${CYAN}11${NC}) dk     ${CYAN}12${NC}) fi"
+echo -e " ${CYAN}13${NC}) pl     ${CYAN}14${NC}) ru     ${CYAN}15${NC}) ua     ${CYAN}16${NC}) cz"
+
+# Grup 3: Asia & lainnya
+echo -e " ${CYAN}17${NC}) tr     ${CYAN}18${NC}) cn     ${CYAN}19${NC}) jp     ${CYAN}20${NC}) kr"
+echo -e " ${CYAN}21${NC}) vn     ${CYAN}22${NC}) br     ${CYAN}23${NC}) ph     ${CYAN}24${NC}) sg"
+
+# Opsi manual
+echo -e " ${CYAN}25${NC}) lain-lain (masukkan kode keymap secara manual)"
+echo -e "──────────────────────────────────────────────────────────────"
+
+echo -en "${YELLOW}Pilihan Anda (default: 1 = us) : ${NC}"
 read -r kb_choice
 kb_choice=${kb_choice:-1}
 
 case $kb_choice in
-    1) KEYBOARD_LAYOUT="us" ;;
-    2) KEYBOARD_LAYOUT="id" ;;
-    3) KEYBOARD_LAYOUT="fr" ;;
-    4) KEYBOARD_LAYOUT="de" ;;
-    5) KEYBOARD_LAYOUT="es" ;;
-    6) KEYBOARD_LAYOUT="it" ;;
-    7) KEYBOARD_LAYOUT="pt" ;;
-    8) KEYBOARD_LAYOUT="gb" ;;
-    9) KEYBOARD_LAYOUT="se" ;;
-   10) KEYBOARD_LAYOUT="no" ;;
-   11) KEYBOARD_LAYOUT="dk" ;;
-   12) KEYBOARD_LAYOUT="fi" ;;
-   13) KEYBOARD_LAYOUT="pl" ;;
-   14) KEYBOARD_LAYOUT="ru" ;;
-   15) KEYBOARD_LAYOUT="ua" ;;
-   16) KEYBOARD_LAYOUT="cz" ;;
-   17) KEYBOARD_LAYOUT="tr" ;;
-   18) KEYBOARD_LAYOUT="cn" ;;
-   19) KEYBOARD_LAYOUT="jp" ;;
-   20) KEYBOARD_LAYOUT="kr" ;;
-   21) KEYBOARD_LAYOUT="vn" ;;
-   22) KEYBOARD_LAYOUT="br" ;;
-   23) KEYBOARD_LAYOUT="ph" ;;
-   24) KEYBOARD_LAYOUT="sg" ;;
-   25) echo -n "Masukkan keymap manual: "; read -r KEYBOARD_LAYOUT ;;
-    *) KEYBOARD_LAYOUT="us" ;;
+    1)  KEYBOARD_LAYOUT="us"     ;;
+    2)  KEYBOARD_LAYOUT="id"     ;;
+    3)  KEYBOARD_LAYOUT="gb"     ;;
+    4)  KEYBOARD_LAYOUT="fr"     ;;
+    5)  KEYBOARD_LAYOUT="de"     ;;
+    6)  KEYBOARD_LAYOUT="es"     ;;
+    7)  KEYBOARD_LAYOUT="it"     ;;
+    8)  KEYBOARD_LAYOUT="pt"     ;;
+    9)  KEYBOARD_LAYOUT="se"     ;;
+   10)  KEYBOARD_LAYOUT="no"     ;;
+   11)  KEYBOARD_LAYOUT="dk"     ;;
+   12)  KEYBOARD_LAYOUT="fi"     ;;
+   13)  KEYBOARD_LAYOUT="pl"     ;;
+   14)  KEYBOARD_LAYOUT="ru"     ;;
+   15)  KEYBOARD_LAYOUT="ua"     ;;
+   16)  KEYBOARD_LAYOUT="cz"     ;;
+   17)  KEYBOARD_LAYOUT="tr"     ;;
+   18)  KEYBOARD_LAYOUT="cn"     ;;
+   19)  KEYBOARD_LAYOUT="jp"     ;;
+   20)  KEYBOARD_LAYOUT="kr"     ;;
+   21)  KEYBOARD_LAYOUT="vn"     ;;
+   22)  KEYBOARD_LAYOUT="br"     ;;
+   23)  KEYBOARD_LAYOUT="ph"     ;;
+   24)  KEYBOARD_LAYOUT="sg"     ;;
+   25)
+       echo -en "${YELLOW}Masukkan kode keymap (contoh: us-intl, thai, arabic): ${NC}"
+       read -r KEYBOARD_LAYOUT
+       if [ -z "$KEYBOARD_LAYOUT" ]; then
+           echo -e "${YELLOW}Kosong → menggunakan default 'us'${NC}"
+           KEYBOARD_LAYOUT="us"
+       fi
+       ;;
+    *)
+       echo -e "${YELLOW}Pilihan tidak dikenali → menggunakan default 'us'${NC}"
+       KEYBOARD_LAYOUT="us"
+       ;;
 esac
+
+# Konfirmasi singkat setelah memilih
+echo -e "${GREEN}Layout keyboard yang dipilih: ${CYAN}${KEYBOARD_LAYOUT}${NC}${NC}"
+echo -e ""
+
 
 # =============================================================================
 # COPY SYSTEM
