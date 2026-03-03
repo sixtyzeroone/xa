@@ -435,9 +435,9 @@ rsync -aHAX --info=progress2 / /mnt/leakos \
 
 mkdir -p /mnt/leakos/boot /mnt/leakos/boot/grub
 cp -v /boot/vmlinuz* /mnt/leakos/boot/ 2>/dev/null || true
-cp -v /boot/initrd* /mnt/leakos/boot/ 2>/dev/null || true
 cp -v /boot/System.map* /mnt/leakos/boot/ 2>/dev/null || true
-
+cp -v /boot/.config* /mnt/leakos/boot/ 2>/dev/null || true
+cp -v /boot/initrd.img-5.16.16* /mnt/leakos/boot/ 2>/dev/null || true
 if ! ls /mnt/leakos/boot/vmlinuz* >/dev/null 2>&1; then
     echo -e "${YELLOW}WARNING: Kernel tidak ditemukan di /mnt/leakos/boot!${NC}"
 fi
@@ -532,6 +532,9 @@ EOT
 
 grub-install --target=i386-pc --recheck "$TARGET_DISK" || grub-install "$TARGET_DISK" || echo "WARNING: GRUB install mungkin gagal"
 
+KERNEL=$(ls /boot/vmlinuz* | head -n1 | xargs -n1 basename)
+INITRD=$(ls /boot/init* 2>/dev/null | head -n1 | xargs -n1 basename)
+
 cat > /boot/grub/grub.cfg <<GRUBEOF
 # LeakOS GRUB Configuration - Shadow Edition
 set default=0
@@ -540,11 +543,13 @@ set timeout=5
 menuentry "LeakOS V1 (Celuluk)" {
     search --no-floppy --fs-uuid --set=root $ROOT_UUID
     linux /boot/vmlinuz root=UUID=$ROOT_UUID ro quiet splash
+    initrd /boot/$INITRD
 }
 
 menuentry "LeakOS V1 (Celuluk) - Recovery" {
     search --no-floppy --fs-uuid --set=root $ROOT_UUID
     linux /boot/vmlinuz root=UUID=$ROOT_UUID ro single
+    initrd /boot/$INITRD
 }
 GRUBEOF
 
