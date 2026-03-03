@@ -490,6 +490,9 @@ fi
 
 CATEGORIES_STRING="${SELECTED_CATEGORIES[*]}"
 
+# ROOT_UUID harus didefinisikan DI DALAM chroot
+ROOT_UUID=\$(blkid -s UUID -o value "$ROOT_PART")
+
 chroot /mnt/leakos /bin/bash <<EOF
 set -e
 
@@ -508,8 +511,7 @@ echo "KEYMAP=$KEYBOARD_LAYOUT" > /etc/vconsole.conf
 ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime
 hwclock --systohc --utc || true
 
-# ROOT_UUID harus didefinisikan DI DALAM chroot
-ROOT_UUID=\$(blkid -s UUID -o value "$ROOT_PART")
+
 
 cat > /etc/fstab <<EOT
 UUID=\$ROOT_UUID / ext4 defaults 0 1
@@ -530,18 +532,18 @@ EOT
 
 grub-install --target=i386-pc --recheck "$TARGET_DISK" || grub-install "$TARGET_DISK" || echo "WARNING: GRUB install mungkin gagal"
 
-cat > /boot/grub/grub.cfg <<'GRUBEOF'
+cat > /boot/grub/grub.cfg <<GRUBEOF
 # LeakOS GRUB Configuration - Shadow Edition
 set default=0
 set timeout=5
 
 menuentry "LeakOS V1 (Celuluk)" {
-    search --no-floppy --fs-uuid --set=root \$ROOT_UUID
+    search --no-floppy --fs-uuid --set=root $ROOT_UUID
     linux /boot/vmlinuz root=UUID=$ROOT_UUID ro quiet splash
 }
 
 menuentry "LeakOS V1 (Celuluk) - Recovery" {
-    search --no-floppy --fs-uuid --set=root \$ROOT_UUID
+    search --no-floppy --fs-uuid --set=root $ROOT_UUID
     linux /boot/vmlinuz root=UUID=$ROOT_UUID ro single
 }
 GRUBEOF
