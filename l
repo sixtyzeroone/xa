@@ -496,9 +496,8 @@ menuentry "LeakOS Linux" {
     insmod part_msdos
     search --no-floppy --fs-uuid --set=root $ROOT_UUID
     echo "Loading Linux kernel..."
-    linux /boot/vmlinuz-$KERNEL_VERSION root=UUID=$ROOT_UUID ro quiet splash loglevel=3
+    linux /boot/vmlinuz root=UUID=$ROOT_UUID ro quiet splash loglevel=3
     echo "Loading initial ramdisk..."
-    initrd /boot/initrd.img-$KERNEL_VERSION
 }
 
 menuentry "LeakOS Linux (Recovery Mode)" {
@@ -506,7 +505,7 @@ menuentry "LeakOS Linux (Recovery Mode)" {
     insmod part_msdos
     search --no-floppy --fs-uuid --set=root $ROOT_UUID
     echo "Loading Linux kernel (recovery)..."
-    linux /boot/vmlinuz-$KERNEL_VERSION root=UUID=$ROOT_UUID ro single
+    linux /boot/vmlinuz root=UUID=$ROOT_UUID ro single
     echo "Loading initial ramdisk..."
     initrd /boot/initrd.img-$KERNEL_VERSION
 }
