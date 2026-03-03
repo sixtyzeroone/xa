@@ -514,7 +514,7 @@ hwclock --systohc --utc || true
 
 
 cat > /etc/fstab <<EOT
-UUID=\$ROOT_UUID / ext4 defaults 0 1
+UUID=$ROOT_UUID / ext4 defaults 0 1
 tmpfs /tmp tmpfs defaults 0 0
 proc /proc proc defaults 0 0
 sysfs /sys sysfs defaults 0 0
