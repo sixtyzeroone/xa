@@ -303,74 +303,162 @@ if [ ! -f "/usr/share/zoneinfo/$TIMEZONE" ]; then
 fi
 
 # =============================================================================
-# KEYBOARD LAYOUT - Versi lebih rapi & terstruktur
+# KEYBOARD LAYOUT SELECTION - PREVIEW MODE (VERSI 3)
 # =============================================================================
-echo -e ""
-echo -e "${BLUE}Pilih layout keyboard:${NC}"
-echo -e "──────────────────────────────────────────────────────────────"
+keyboard_menu() {
+    echo ""
+    echo -e "${BLUE}╔════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${BLUE}║                   PILIH LAYOUT KEYBOARD                    ║${NC}"
+    echo -e "${BLUE}╚════════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+    
+    # Tampilan grid 3 kolom dengan border
+    echo "┌──────┬─────────────────┬──────┬─────────────────┬──────┬─────────────────┐"
+    echo "│ No   │ Layout          │ No   │ Layout          │ No   │ Layout          │"
+    echo "├──────┼─────────────────┼──────┼─────────────────┼──────┼─────────────────┤"
+    echo "│ 1    │ us  (US English)│ 2    │ id  (Indonesia) │ 3    │ fr  (French)    │"
+    echo "│ 4    │ de  (German)    │ 5    │ es  (Spanish)   │ 6    │ it  (Italian)   │"
+    echo "│ 7    │ pt  (Portuguese)│ 8    │ gb  (UK English)│ 9    │ se  (Swedish)   │"
+    echo "│ 10   │ no  (Norwegian) │ 11   │ dk  (Danish)    │ 12   │ fi  (Finnish)   │"
+    echo "│ 13   │ pl  (Polish)    │ 14   │ ru  (Russian)   │ 15   │ ua  (Ukrainian) │"
+    echo "│ 16   │ cz  (Czech)     │ 17   │ tr  (Turkish)   │ 18   │ cn  (Chinese)   │"
+    echo "│ 19   │ jp  (Japanese)  │ 20   │ kr  (Korean)    │ 21   │ vn  (Vietnamese)│"
+    echo "│ 22   │ br  (Brazilian) │ 23   │ ph  (Philippines)│24   │ sg  (Singapore) │"
+    echo "├──────┼─────────────────┼──────┼─────────────────┼──────┼─────────────────┤"
+    echo "│ 25   │ manual (custom) │      │                 │      │                 │"
+    echo "└──────┴─────────────────┴──────┴─────────────────┴──────┴─────────────────┘"
+    echo ""
+    
+    # Mapping array asosiatif
+    declare -A KEYMAPS=(
+        [1]="us"   [2]="id"   [3]="fr"   [4]="de"   [5]="es"
+        [6]="it"   [7]="pt"   [8]="gb"   [9]="se"   [10]="no"
+        [11]="dk"  [12]="fi"  [13]="pl"  [14]="ru"  [15]="ua"
+        [16]="cz"  [17]="tr"  [18]="cn"  [19]="jp"  [20]="kr"
+        [21]="vn"  [22]="br"  [23]="ph"  [24]="sg"
+    )
+    
+    while true; do
+        echo -en "${YELLOW}Pilih nomor (1-25, default: 1): ${NC}"
+        read -r kb_choice
+        kb_choice=${kb_choice:-1}
+        
+        # Validasi input numerik
+        if ! [[ "$kb_choice" =~ ^[0-9]+$ ]]; then
+            echo -e "${RED}❌ Harus angka!${NC}"
+            continue
+        fi
+        
+        # Handle pilihan
+        if [ "$kb_choice" -eq 25 ]; then
+            # Manual input
+            echo -en "Masukkan keymap manual (contoh: de, fr, id): "
+            read -r KEYBOARD_LAYOUT
+            
+            # Validasi tidak kosong
+            if [ -z "$KEYBOARD_LAYOUT" ]; then
+                echo -e "${RED}❌ Keymap tidak boleh kosong!${NC}"
+                continue
+            fi
+            
+            # Validasi format (hanya huruf kecil)
+            if [[ ! "$KEYBOARD_LAYOUT" =~ ^[a-z]{2,3}$ ]]; then
+                echo -e "${YELLOW}⚠️  Format tidak biasa (biasanya 2-3 huruf). Lanjutkan? (y/n): ${NC}"
+                read -r confirm_manual
+                if [[ "$confirm_manual" != "y" ]] && [[ "$confirm_manual" != "Y" ]]; then
+                    continue
+                fi
+            fi
+            
+        elif [ "$kb_choice" -ge 1 ] && [ "$kb_choice" -le 24 ]; then
+            # Pilih dari mapping
+            KEYBOARD_LAYOUT="${KEYMAPS[$kb_choice]}"
+        else
+            echo -e "${RED}❌ Pilih antara 1-25!${NC}"
+            continue
+        fi
+        
+        # Tampilkan pilihan
+        echo -e "\n${CYAN}┌─────────────────────────────────────┐${NC}"
+        echo -e "${CYAN}│         PREVIEW KEYBOARD              │${NC}"
+        echo -e "${CYAN}├─────────────────────────────────────┤${NC}"
+        echo -e "│ Layout dipilih: ${BOLD}$KEYBOARD_LAYOUT${NC}               │"
+        echo -e "${CYAN}├─────────────────────────────────────┤${NC}"
+        
+        # Preview berdasarkan layout
+        case $KEYBOARD_LAYOUT in
+            us|gb)
+                echo "│ US/UK layout:                          │"
+                echo "│ Tombol 'a' = a (bawah)                 │"
+                echo "│ Tombol 'z' = z (kiri bawah)            │"
+                ;;
+            id)
+                echo "│ Indonesia layout (US-based):            │"
+                echo "│ Sama seperti US English                 │"
+                echo "│ Tombol 'a' = a                          │"
+                ;;
+            fr)
+                echo "│ French layout (AZERTY):                 │"
+                echo "│ Tombol 'a' = q (bergeser)               │"
+                echo "│ Tombol 'z' = w (bergeser)               │"
+                ;;
+            de)
+                echo "│ German layout (QWERTZ):                 │"
+                echo "│ Tombol 'y' = z (tertukar)               │"
+                echo "│ Tombol 'z' = y (tertukar)               │"
+                ;;
+            ru)
+                echo "│ Russian layout (ЙЦУКЕН):                │"
+                echo "│ Tombol 'a' = ф                          │"
+                echo "│ Tombol 'z' = я                          │"
+                ;;
+            jp)
+                echo "│ Japanese layout:                         │"
+                echo "│ US-based dengan kana switch             │"
+                ;;
+            *)
+                echo "│ Layout: $KEYBOARD_LAYOUT                    │"
+                echo "│ (tidak ada preview spesifik)            │"
+                echo "│ Pastikan sesuai dengan hardware Anda    │"
+                ;;
+        esac
+        
+        echo -e "${CYAN}├─────────────────────────────────────┤${NC}"
+        echo -e "│ ${YELLOW}Tekan 't' untuk test ketik           ${NC} │"
+        echo -e "│ ${YELLOW}Enter untuk lanjut                   ${NC} │"
+        echo -e "${CYAN}└─────────────────────────────────────┘${NC}"
+        
+        echo -en "\n${YELLOW}Pilihan Anda [Enter=lanjut, t=test, b=kembali]: ${NC}"
+        read -r confirm_layout
+        
+        if [[ "$confirm_layout" == "t" ]] || [[ "$confirm_layout" == "T" ]]; then
+            # Mode test ketik
+            echo -e "\n${BLUE}Mode test keyboard (ketik beberapa huruf, tekan Enter untuk selesai):${NC}"
+            echo -e "Coba ketik: ${CYAN}the quick brown fox jumps over the lazy dog${NC}"
+            read -r test_input
+            echo -e "Anda mengetik: ${GREEN}$test_input${NC}"
+            echo -en "${YELLOW}Cocok dengan layout $KEYBOARD_LAYOUT? (y/n): ${NC}"
+            read -r test_confirm
+            if [[ "$test_confirm" == "y" ]] || [[ "$test_confirm" == "Y" ]]; then
+                break
+            fi
+            # Jika tidak, ulangi loop
+        elif [[ "$confirm_layout" == "b" ]] || [[ "$confirm_layout" == "B" ]]; then
+            continue  # Kembali ke pilihan layout
+        elif [[ -z "$confirm_layout" ]]; then
+            # Enter ditekan, lanjutkan
+            break
+        fi
+    done
+}
 
-# Grup 1: Umum & Indonesia
-echo -e "  ${CYAN}1${NC}) us      ${CYAN}2${NC}) id      ${CYAN}3${NC}) gb      ${CYAN}4${NC}) fr"
-echo -e "  ${CYAN}5${NC}) de      ${CYAN}6${NC}) es      ${CYAN}7${NC}) it      ${CYAN}8${NC}) pt"
+# Panggil fungsi keyboard menu
+keyboard_menu
 
-# Grup 2: Eropa Utara & Timur
-echo -e "  ${CYAN}9${NC}) se     ${CYAN}10${NC}) no     ${CYAN}11${NC}) dk     ${CYAN}12${NC}) fi"
-echo -e " ${CYAN}13${NC}) pl     ${CYAN}14${NC}) ru     ${CYAN}15${NC}) ua     ${CYAN}16${NC}) cz"
-
-# Grup 3: Asia & lainnya
-echo -e " ${CYAN}17${NC}) tr     ${CYAN}18${NC}) cn     ${CYAN}19${NC}) jp     ${CYAN}20${NC}) kr"
-echo -e " ${CYAN}21${NC}) vn     ${CYAN}22${NC}) br     ${CYAN}23${NC}) ph     ${CYAN}24${NC}) sg"
-
-# Opsi manual
-echo -e " ${CYAN}25${NC}) lain-lain (masukkan kode keymap secara manual)"
-echo -e "──────────────────────────────────────────────────────────────"
-
-echo -en "${YELLOW}Pilihan Anda (default: 1 = us) : ${NC}"
-read -r kb_choice
-kb_choice=${kb_choice:-1}
-
-case $kb_choice in
-    1)  KEYBOARD_LAYOUT="us"     ;;
-    2)  KEYBOARD_LAYOUT="id"     ;;
-    3)  KEYBOARD_LAYOUT="gb"     ;;
-    4)  KEYBOARD_LAYOUT="fr"     ;;
-    5)  KEYBOARD_LAYOUT="de"     ;;
-    6)  KEYBOARD_LAYOUT="es"     ;;
-    7)  KEYBOARD_LAYOUT="it"     ;;
-    8)  KEYBOARD_LAYOUT="pt"     ;;
-    9)  KEYBOARD_LAYOUT="se"     ;;
-   10)  KEYBOARD_LAYOUT="no"     ;;
-   11)  KEYBOARD_LAYOUT="dk"     ;;
-   12)  KEYBOARD_LAYOUT="fi"     ;;
-   13)  KEYBOARD_LAYOUT="pl"     ;;
-   14)  KEYBOARD_LAYOUT="ru"     ;;
-   15)  KEYBOARD_LAYOUT="ua"     ;;
-   16)  KEYBOARD_LAYOUT="cz"     ;;
-   17)  KEYBOARD_LAYOUT="tr"     ;;
-   18)  KEYBOARD_LAYOUT="cn"     ;;
-   19)  KEYBOARD_LAYOUT="jp"     ;;
-   20)  KEYBOARD_LAYOUT="kr"     ;;
-   21)  KEYBOARD_LAYOUT="vn"     ;;
-   22)  KEYBOARD_LAYOUT="br"     ;;
-   23)  KEYBOARD_LAYOUT="ph"     ;;
-   24)  KEYBOARD_LAYOUT="sg"     ;;
-   25)
-       echo -en "${YELLOW}Masukkan kode keymap (contoh: us-intl, thai, arabic): ${NC}"
-       read -r KEYBOARD_LAYOUT
-       if [ -z "$KEYBOARD_LAYOUT" ]; then
-           echo -e "${YELLOW}Kosong → menggunakan default 'us'${NC}"
-           KEYBOARD_LAYOUT="us"
-       fi
-       ;;
-    *)
-       echo -e "${YELLOW}Pilihan tidak dikenali → menggunakan default 'us'${NC}"
-       KEYBOARD_LAYOUT="us"
-       ;;
-esac
-
-# Konfirmasi singkat setelah memilih
-echo -e "${GREEN}Layout keyboard yang dipilih: ${CYAN}${KEYBOARD_LAYOUT}${NC}${NC}"
-echo -e ""
+# Tampilkan hasil akhir
+echo -e "\n${GREEN}✅ Layout keyboard: ${BOLD}$KEYBOARD_LAYOUT${NC}"
+echo -e "${GREEN}✅ Akan disimpan di /etc/vconsole.conf${NC}"
+echo ""
 
 
 # =============================================================================
