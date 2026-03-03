@@ -234,7 +234,7 @@ rsync -aHAX --info=progress2 / /mnt/leakos \
 
 # Kernel
 mkdir -p /mnt/leakos/boot
-mkdir /mnt/leakos/boot/grub
+mkdir -p /mnt/leakos/boot/grub
 
 cp -v /boot/vmlinuz* /mnt/leakos/boot/ 2>/dev/null || true
 cp -v /boot/initrd*  /mnt/leakos/boot/ 2>/dev/null || true
