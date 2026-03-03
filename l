@@ -234,6 +234,8 @@ rsync -aHAX --info=progress2 / /mnt/leakos \
 
 # Kernel
 mkdir -p /mnt/leakos/boot
+mkdir /mnt/leakos/boot/grub
+
 cp -v /boot/vmlinuz* /mnt/leakos/boot/ 2>/dev/null || true
 cp -v /boot/initrd*  /mnt/leakos/boot/ 2>/dev/null || true
 cp -v /boot/System.map* /mnt/leakos/boot/ 2>/dev/null || true
@@ -334,6 +336,7 @@ ff02::2     ip6-allrouters
 EOT
 
 # GRUB
+
 grub-install --target=i386-pc --recheck "$TARGET_DISK" || true
 grub-install "$TARGET_DISK" || true
 grub-mkconfig -o /boot/grub/grub.cfg
