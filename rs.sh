@@ -550,7 +550,7 @@ set timeout=5
 
 menuentry "LeakOS V1 (Celuluk)" {
     
-    search -insmod ext2
+    search insmod ext2
     insmod part_msdos
     insmod part_gpt
     
