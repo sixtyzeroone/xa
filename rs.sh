@@ -431,15 +431,11 @@ fi
 mkdir -p /mnt/leakos
 mount "$ROOT_PART" /mnt/leakos
 
-# Backup file penting dulu
-cp /etc/passwd /etc/passwd.backup 2>/dev/null || true
-cp /etc/group /etc/group.backup 2>/dev/null || true
-cp /etc/shadow /etc/shadow.backup 2>/dev/null || true
+
 
 rsync -aH --info=progress2 / /mnt/leakos \
     --exclude={/dev/*,/proc/*,/sys/*,/run/*,/tmp/*,/mnt/*,/media/*,/lost+found,/var/log/*,/var/cache/*,/etc/fstab,/etc/hostname,/etc/shadow,/etc/passwd,/boot/grub/*}
 
-chmod 755 /mnt/leakos
 
 
 mkdir -p /mnt/leakos/boot /mnt/leakos/boot/grub
