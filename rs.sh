@@ -528,9 +528,121 @@ chroot /mnt/leakos /bin/bash <<EOF
 set -e
 echo "$HOSTNAME" > /etc/hostname
 
-useradd -m -G wheel -s /bin/bash "$USERNAME" 2>/dev/null || useradd -m -s /bin/bash "$USERNAME"
-echo "$USERNAME:$PASSWORD" | chpasswd
+# ====================================================
+# BUAT FILE PASSWD DASAR (WAJIB ADA ROOT)
+# ====================================================
+cat > /etc/passwd << 'PASSWD'
+root:x:0:0:root:/root:/bin/bash
+bin:x:1:1:bin:/bin:/sbin/nologin
+daemon:x:2:2:daemon:/sbin:/sbin/nologin
+adm:x:3:4:adm:/var/adm:/sbin/nologin
+lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin
+sync:x:5:0:sync:/sbin:/bin/sync
+shutdown:x:6:0:shutdown:/sbin:/sbin/shutdown
+halt:x:7:0:halt:/sbin:/sbin/halt
+mail:x:8:12:mail:/var/spool/mail:/sbin/nologin
+operator:x:11:0:operator:/root:/sbin/nologin
+games:x:12:100:games:/usr/games:/sbin/nologin
+ftp:x:14:50:FTP User:/var/ftp:/sbin/nologin
+nobody:x:65534:65534:Kernel Overflow User:/:/sbin/nologin
+dbus:x:81:81:System message bus:/:/sbin/nologin
+messagebus:x:100:101:User for D-Bus:/run/dbus:/sbin/nologin
+polkitd:x:102:102:PolicyKit:/:/sbin/nologin
+PASSWD
+
+# ====================================================
+# BUAT FILE GROUP DASAR
+# ====================================================
+cat > /etc/group << 'GROUP'
+root:x:0:
+bin:x:1:
+daemon:x:2:
+sys:x:3:
+adm:x:4:
+tty:x:5:
+disk:x:6:
+lp:x:7:
+mem:x:8:
+kmem:x:9:
+wheel:x:10:
+cdrom:x:11:
+mail:x:12:
+man:x:15:
+dialout:x:18:
+floppy:x:19:
+games:x:20:
+tape:x:33:
+video:x:39:
+ftp:x:50:
+lock:x:54:
+audio:x:63:
+nobody:x:65534:
+users:x:100:
+dbus:x:81:
+messagebus:x:101:
+polkitd:x:102:
+systemd-journal:x:190:
+systemd-coredump:x:999:
+GROUP
+
+# ====================================================
+# BUAT FILE SHADOW DASAR
+# ====================================================
+cat > /etc/shadow << 'SHADOW'
+root:*:19701:0:99999:7:::
+bin:*:19701:0:99999:7:::
+daemon:*:19701:0:99999:7:::
+adm:*:19701:0:99999:7:::
+lp:*:19701:0:99999:7:::
+sync:*:19701:0:99999:7:::
+shutdown:*:19701:0:99999:7:::
+halt:*:19701:0:99999:7:::
+mail:*:19701:0:99999:7:::
+operator:*:19701:0:99999:7:::
+games:*:19701:0:99999:7:::
+ftp:*:19701:0:99999:7:::
+nobody:*:19701:0:99999:7:::
+dbus:*:19701:0:99999:7:::
+messagebus:*:19701:0:99999:7:::
+polkitd:*:19701:0:99999:7:::
+SHADOW
+
+# ====================================================
+# SET PERMISSION
+# ====================================================
+chmod 644 /etc/passwd /etc/group
+chmod 000 /etc/shadow
+chown root:root /etc/passwd /etc/group /etc/shadow
+
+echo -e "\033[0;32m[2/8] VERIFIKASI USER ROOT...\033[0m"
+
+# Verifikasi root ada
+if ! grep -q "^root:" /etc/passwd; then
+    echo -e "\033[0;31mERROR: Root masih tidak ada! Membuat manual...\033[0m"
+    echo "root:x:0:0:root:/root:/bin/bash" >> /etc/passwd
+fi
+
+# Tampilkan verifikasi
+echo "Root entry: $(grep ^root /etc/passwd)"
+echo "Total users: $(wc -l < /etc/passwd)"
+
+echo -e "\033[0;32m[3/8] SET PASSWORD ROOT DAN USER...\033[0m"
+
+# SET PASSWORD MENGGUNAKAN CHPASSWD (DENGAN FORMAT YANG BENAR)
 echo "root:$ROOT_PASSWORD" | chpasswd
+echo "$USERNAME:$PASSWORD" | chpasswd
+
+# Verifikasi password tersimpan
+echo "Password root dan user telah diset."
+
+echo -e "\033[0;32m[4/8] MEMBUAT USER BIASA...\033[0m"
+
+# Buat user biasa dengan home directory
+useradd -m -G wheel -s /bin/bash "$USERNAME" 2>/dev/null || echo "User $USERNAME sudah ada"
+
+# Set password lagi untuk memastikan
+echo "$USERNAME:$PASSWORD" | chpasswd
+
 
 
 
