@@ -641,7 +641,12 @@ $USERNAME ALL=(ALL:ALL) ALL
 ## Read includes from /etc/sudoers.d
 @includedir /etc/sudoers.d
 SUDOERS
+# Set permission yang benar untuk sudoers (WAJIB!)
+chmod 440 /etc/sudoers
+chown root:root /etc/sudoers
 
+chmod 440 /etc/sudoers.d/wheel
+chown root:root /etc/sudoers.d/wheel
 
 echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
 echo "id_ID.UTF-8 UTF-8" >> /etc/locale.gen
