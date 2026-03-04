@@ -490,8 +490,8 @@ fi
 
 CATEGORIES_STRING="${SELECTED_CATEGORIES[*]}"
 
-ROOT_UUID=$(blkid -p -s UUID -o value "$ROOT_PART")
-ROOT_PARTUUID=$(blkid -p -s PARTUUID -o value "$ROOT_PART")
+ROOT_UUID=$(blkid -s UUID -o value "$ROOT_PART")
+ROOT_PARTUUID=$(blkid -s PARTUUID -o value "$ROOT_PART")
 
 if [ -z "$ROOT_UUID" ] || [ -z "$ROOT_PARTUUID" ]; then
     echo "ERROR: UUID / PARTUUID gagal dideteksi!"
@@ -550,13 +550,13 @@ set timeout=5
 
 menuentry "LeakOS V1 (Celuluk)" {
     
-    search insmod ext2
+    insmod ext2
     insmod part_msdos
     insmod part_gpt
     
     search --no-floppy --partuuid --set=root $ROOT_PARTUUID
-    linux /boot/$KERNEL root=PARTUUID=$ROOT_PARTUUID ro rootwait rootfstype=ext4
-    initrd /boot/$INITRD
+    linux /boot/vmlinuz root=PARTUUID=$ROOT_PARTUUID ro rootwait rootfstype=ext4
+
 }
 
 menuentry "LeakOS V1 (Celuluk) - Recovery" {
@@ -565,7 +565,7 @@ menuentry "LeakOS V1 (Celuluk) - Recovery" {
     insmod part_gpt
 
     search --no-floppy --partuuid --set=root $ROOT_PARTUUID
-    linux /boot/$KERNEL root=PARTUUID=$ROOT_PARTUUID ro single rootwait rootfstype=ext4
+    linux /boot/vmlinuz root=PARTUUID=$ROOT_PARTUUID ro single rootwait rootfstype=ext4
 
 }
 GRUBEOF
