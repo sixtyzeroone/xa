@@ -569,6 +569,11 @@ ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
 EOT
 
+
+groupadd -r polkitd
+useradd -r -g polkitd -d / -s /sbin/nologin -c "PolicyKit Daemon" polkitd
+
+
 mkdir -p /run/dbus /var/run/dbus
 chown messagebus:messagebus /run/dbus /var/run/dbus 2>/dev/null || true
 chmod 755 /run/dbus /var/run/dbus
