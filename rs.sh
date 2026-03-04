@@ -459,15 +459,18 @@ if ! ls /mnt/leakos/boot/vmlinuz* >/dev/null 2>&1; then
 fi
 sync
 
-mount --bind /dev /mnt/leakos/dev
-mount --bind /proc /mnt/leakos/proc
-mount --bind /sys /mnt/leakos/sys
-mount --bind /run /mnt/leakos/run
-mount --bind /dev/pts /mnt/leakos/dev/pts
+mount --types proc /proc /mnt/leakos/proc
+mount --rbind /sys /mnt/leakos/sys
+mount --make-rslave /mnt/leakos/sys
+mount --rbind /dev /mnt/leakos/dev
+mount --make-rslave /mnt/leakos/dev
+
+mkdir -p /mnt/leakos/dev/pts
+mount -t devpts devpts /mnt/leakos/dev/pts \
+    -o gid=5,mode=620,ptmxmode=000
 
 mkdir -p /mnt/leakos/run/dbus
 mkdir -p /mnt/leakos/run/user
-mount -t tmpfs tmpfs /mnt/leakos/run 2>/dev/null || true
 
 # =============================================================================
 # PENTEST TOOLS
@@ -607,7 +610,37 @@ echo "$USERNAME:$PASSWORD" | chpasswd
 
 echo "%wheel ALL=(ALL) ALL" > /etc/sudoers.d/wheel 2>/dev/null || echo "$USERNAME ALL=(ALL) ALL" >> /etc/sudoers
 
+cat > /etc/sudoers << 'SUDOERS'
+# sudoers file.
+#
+# This file MUST be edited with the 'visudo' command as root.
+# Failure to use 'visudo' may result in syntax or file permission errors
+# that prevent sudo from running.
+#
+# See the sudoers man page for the details on how to write a sudoers file.
 
+## Defaults specifications
+Defaults    env_reset
+Defaults    mail_badpass
+Defaults    secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+## Host alias specification
+
+## User alias specification
+
+## Cmnd alias specification
+
+## User privilege specification
+root    ALL=(ALL:ALL) ALL
+$USERNAME ALL=(ALL:ALL) ALL
+
+## Allow members of group sudo and wheel to execute any command
+#%wheel ALL=(ALL:ALL) ALL
+%sudo  ALL=(ALL:ALL) ALL
+
+## Read includes from /etc/sudoers.d
+@includedir /etc/sudoers.d
+SUDOERS
 
 
 echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
