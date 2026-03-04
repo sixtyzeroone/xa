@@ -431,8 +431,16 @@ fi
 mkdir -p /mnt/leakos
 mount "$ROOT_PART" /mnt/leakos
 
-rsync -aHAX --info=progress2 / /mnt/leakos \
+# Backup file penting dulu
+cp /etc/passwd /etc/passwd.backup 2>/dev/null || true
+cp /etc/group /etc/group.backup 2>/dev/null || true
+cp /etc/shadow /etc/shadow.backup 2>/dev/null || true
+
+rsync -aH --info=progress2 / /mnt/leakos \
     --exclude={/dev/*,/proc/*,/sys/*,/run/*,/tmp/*,/mnt/*,/media/*,/lost+found,/var/log/*,/var/cache/*,/etc/fstab,/etc/hostname,/etc/shadow,/etc/passwd,/boot/grub/*}
+
+chmod 755 /mnt/leakos
+
 
 mkdir -p /mnt/leakos/boot /mnt/leakos/boot/grub
 cp -v /boot/vmlinuz* /mnt/leakos/boot/ 2>/dev/null || true
@@ -448,6 +456,10 @@ mount --bind /proc /mnt/leakos/proc
 mount --bind /sys /mnt/leakos/sys
 mount --bind /run /mnt/leakos/run
 mount --bind /dev/pts /mnt/leakos/dev/pts
+
+mkdir -p /mnt/leakos/run/dbus
+mkdir -p /mnt/leakos/run/user
+mount -t tmpfs tmpfs /mnt/leakos/run 2>/dev/null || true
 
 # =============================================================================
 # PENTEST TOOLS
@@ -502,8 +514,143 @@ echo "UUID      : $ROOT_UUID"
 echo "PARTUUID  : $ROOT_PARTUUID"
 sleep 2
 
+cat > /mnt/leakos/etc/passwd << 'PASSWDEOF'
+root:x:0:0:root:/root:/bin/bash
+bin:x:1:1:bin:/bin:/sbin/nologin
+daemon:x:2:2:daemon:/sbin:/sbin/nologin
+adm:x:3:4:adm:/var/adm:/sbin/nologin
+lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin
+sync:x:5:0:sync:/sbin:/bin/sync
+shutdown:x:6:0:shutdown:/sbin:/sbin/shutdown
+halt:x:7:0:halt:/sbin:/sbin/halt
+mail:x:8:12:mail:/var/spool/mail:/sbin/nologin
+operator:x:11:0:operator:/root:/sbin/nologin
+games:x:12:100:games:/usr/games:/sbin/nologin
+ftp:x:14:50:FTP User:/var/ftp:/sbin/nologin
+nobody:x:65534:65534:Kernel Overflow User:/:/sbin/nologin
+dbus:x:81:81:System message bus:/:/sbin/nologin
+systemd-coredump:x:999:999:systemd Core Dumper:/:/sbin/nologin
+systemd-resolve:x:193:193:systemd Resolver:/:/sbin/nologin
+messagebus:x:100:101:User for D-Bus:/run/dbus:/sbin/nologin
+PASSWDEOF
+
+# Buat file group dasar
+cat > /mnt/leakos/etc/group << 'GROUPEOF'
+root:x:0:
+bin:x:1:
+daemon:x:2:
+sys:x:3:
+adm:x:4:
+tty:x:5:
+disk:x:6:
+lp:x:7:
+mem:x:8:
+kmem:x:9:
+wheel:x:10:
+cdrom:x:11:
+mail:x:12:
+man:x:15:
+dialout:x:18:
+floppy:x:19:
+games:x:20:
+tape:x:33:
+video:x:39:
+ftp:x:50:
+lock:x:54:
+audio:x:63:
+nobody:x:65534:
+users:x:100:
+dbus:x:81:
+systemd-journal:x:190:
+systemd-coredump:x:999:
+messagebus:x:101:
+GROUPEOF
+
+# Buat file shadow dasar
+cat > /mnt/leakos/etc/shadow << 'SHADOWEOF'
+root:*:19701:0:99999:7:::
+bin:*:19701:0:99999:7:::
+daemon:*:19701:0:99999:7:::
+adm:*:19701:0:99999:7:::
+lp:*:19701:0:99999:7:::
+sync:*:19701:0:99999:7:::
+shutdown:*:19701:0:99999:7:::
+halt:*:19701:0:99999:7:::
+mail:*:19701:0:99999:7:::
+operator:*:19701:0:99999:7:::
+games:*:19701:0:99999:7:::
+ftp:*:19701:0:99999:7:::
+nobody:*:19701:0:99999:7:::
+dbus:*:19701:0:99999:7:::
+systemd-coredump:*:19701:0:99999:7:::
+systemd-resolve:*:19701:0:99999:7:::
+messagebus:*:19701:0:99999:7:::
+SHADOWEOF
+
+# Set permission yang benar
+chmod 644 /mnt/leakos/etc/passwd
+chmod 644 /mnt/leakos/etc/group
+chmod 000 /mnt/leakos/etc/shadow
+
 chroot /mnt/leakos /bin/bash <<EOF
 set -e
+# Buat ulang user database jika perlu
+pwconv
+grpconv
+
+# Pastikan dbus user ada
+if ! id dbus &>/dev/null; then
+    useradd -r -s /sbin/nologin -c "D-Bus System Daemon" dbus 2>/dev/null || true
+fi
+
+# Pastikan messagebus user ada (untuk dbus)
+if ! id messagebus &>/dev/null; then
+    useradd -r -s /sbin/nologin -c "Message Bus User" messagebus 2>/dev/null || true
+fi
+
+# Pastikan user apache/www-data ada untuk PHP
+if ! id apache &>/dev/null && ! id www-data &>/dev/null; then
+    groupadd -r apache 2>/dev/null || true
+    useradd -r -g apache -s /sbin/nologin -c "Apache Server" apache 2>/dev/null || true
+fi
+
+# PERBAIKAN 2: Perbaiki ownership file-file sistem
+echo "Memperbaiki ownership file..."
+
+# Core system files
+chown root:root /etc/passwd /etc/group /etc/shadow /etc/gshadow 2>/dev/null || true
+chmod 644 /etc/passwd /etc/group
+chmod 000 /etc/shadow
+
+# D-Bus directories
+mkdir -p /var/run/dbus /run/dbus /run/user
+chown messagebus:messagebus /var/run/dbus /run/dbus 2>/dev/null || true
+chmod 755 /var/run/dbus /run/dbus
+
+# PERBAIKAN 3: Regenerate dbus config
+echo "Regenerasi konfigurasi dbus..."
+if command -v dbus-uuidgen >/dev/null; then
+    dbus-uuidgen --ensure 2>/dev/null || true
+fi
+
+# Pastikan machine-id ada
+if [ ! -f /etc/machine-id ]; then
+    dbus-uuidgen > /etc/machine-id 2>/dev/null || echo "unique" > /etc/machine-id
+fi
+
+# PERBAIKAN 4: Cek dan perbaiki shadow
+echo "Memeriksa shadow file..."
+pwck -s 2>/dev/null || true
+grpck -s 2>/dev/null || true
+
+# Lanjut dengan konfigurasi lain...
+EOFCHROOT
+
+
+
+
+
+
 
 echo "$HOSTNAME" > /etc/hostname
 
@@ -554,7 +701,6 @@ menuentry "LeakOS V1 (Celuluk)" {
     insmod part_msdos
     insmod part_gpt
     
-    search --no-floppy --partuuid --set=root $ROOT_PARTUUID
     linux /boot/vmlinuz root=PARTUUID=$ROOT_PARTUUID ro rootwait rootfstype=ext4
 
 }
@@ -563,8 +709,6 @@ menuentry "LeakOS V1 (Celuluk) - Recovery" {
     insmod ext2
     insmod part_msdos
     insmod part_gpt
-
-    search --no-floppy --partuuid --set=root $ROOT_PARTUUID
     linux /boot/vmlinuz root=PARTUUID=$ROOT_PARTUUID ro single rootwait rootfstype=ext4
 
 }
