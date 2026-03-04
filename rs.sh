@@ -608,7 +608,7 @@ echo "$USERNAME:$PASSWORD" | chpasswd
 
 
 
-echo "%wheel ALL=(ALL) ALL" > /etc/sudoers.d/wheel 2>/dev/null || echo "$USERNAME ALL=(ALL) ALL" >> /etc/sudoers
+echo "%wheel ALL=(ALL) ALL" > /etc/sudoers.d/wheel 2>/dev/null
 
 cat > /etc/sudoers << 'SUDOERS'
 # sudoers file.
