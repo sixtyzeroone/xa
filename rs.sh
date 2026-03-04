@@ -143,9 +143,10 @@ fi
 cfdisk "$TARGET_DISK"
 
 echo -e "Partisi selesai. Memperbarui tabel partisi..."
-partprobe "$TARGET_DISK" || true
 sync
-sleep 3
+sleep 2
+partprobe "$TARGET_DISK"
+udevadm settle
 
 # =============================================================================
 # DETECT & FORMAT PARTISI OTOMATIS
@@ -436,8 +437,7 @@ rsync -aHAX --info=progress2 / /mnt/leakos \
 mkdir -p /mnt/leakos/boot /mnt/leakos/boot/grub
 cp -v /boot/vmlinuz* /mnt/leakos/boot/ 2>/dev/null || true
 cp -v /boot/System.map* /mnt/leakos/boot/ 2>/dev/null || true
-cp -v /boot/.config* /mnt/leakos/boot/ 2>/dev/null || true
-cp -v /boot/initrd.img-5.16.16* /mnt/leakos/boot/ 2>/dev/null || true
+
 if ! ls /mnt/leakos/boot/vmlinuz* >/dev/null 2>&1; then
     echo -e "${YELLOW}WARNING: Kernel tidak ditemukan di /mnt/leakos/boot!${NC}"
 fi
@@ -490,8 +490,17 @@ fi
 
 CATEGORIES_STRING="${SELECTED_CATEGORIES[*]}"
 
-# ROOT_UUID harus didefinisikan DI DALAM chroot
-ROOT_UUID=$(blkid -s UUID -o value "$ROOT_PART")
+ROOT_UUID=$(blkid -p -s UUID -o value "$ROOT_PART")
+ROOT_PARTUUID=$(blkid -p -s PARTUUID -o value "$ROOT_PART")
+
+if [ -z "$ROOT_UUID" ] || [ -z "$ROOT_PARTUUID" ]; then
+    echo "ERROR: UUID / PARTUUID gagal dideteksi!"
+    exit 1
+fi
+
+echo "UUID      : $ROOT_UUID"
+echo "PARTUUID  : $ROOT_PARTUUID"
+sleep 2
 
 chroot /mnt/leakos /bin/bash <<EOF
 set -e
@@ -533,7 +542,6 @@ EOT
 grub-install --target=i386-pc --recheck "$TARGET_DISK" || grub-install "$TARGET_DISK" || echo "WARNING: GRUB install mungkin gagal"
 
 KERNEL=$(ls /boot/vmlinuz* | head -n1 | xargs -n1 basename)
-INITRD=$(ls /boot/init* 2>/dev/null | head -n1 | xargs -n1 basename)
 
 cat > /boot/grub/grub.cfg <<GRUBEOF
 # LeakOS GRUB Configuration - Shadow Edition
@@ -541,15 +549,24 @@ set default=0
 set timeout=5
 
 menuentry "LeakOS V1 (Celuluk)" {
-    search --no-floppy --fs-uuid --set=root $ROOT_UUID
-    linux /boot/vmlinuz root=UUID=$ROOT_UUID ro quiet splash
+    
+    search -insmod ext2
+    insmod part_msdos
+    insmod part_gpt
+    
+    search --no-floppy --partuuid --set=root $ROOT_PARTUUID
+    linux /boot/$KERNEL root=PARTUUID=$ROOT_PARTUUID ro rootwait rootfstype=ext4
     initrd /boot/$INITRD
 }
 
 menuentry "LeakOS V1 (Celuluk) - Recovery" {
-    search --no-floppy --fs-uuid --set=root $ROOT_UUID
-    linux /boot/vmlinuz root=UUID=$ROOT_UUID ro single
-    initrd /boot/$INITRD
+    insmod ext2
+    insmod part_msdos
+    insmod part_gpt
+
+    search --no-floppy --partuuid --set=root $ROOT_PARTUUID
+    linux /boot/$KERNEL root=PARTUUID=$ROOT_PARTUUID ro single rootwait rootfstype=ext4
+
 }
 GRUBEOF
 
