@@ -459,15 +459,28 @@ if ! ls /mnt/leakos/boot/vmlinuz* >/dev/null 2>&1; then
 fi
 sync
 
-mount --types proc /proc /mnt/leakos/proc
-mount --rbind /sys /mnt/leakos/sys
-mount --make-rslave /mnt/leakos/sys
-mount --rbind /dev /mnt/leakos/dev
-mount --make-rslave /mnt/leakos/dev
+# Sebelum chroot, pastikan mount lengkap
+mkdir -p /mnt/leakos/{dev/pts,proc,sys,run}
 
-mkdir -p /mnt/leakos/dev/pts
-mount -t devpts devpts /mnt/leakos/dev/pts \
-    -o gid=5,mode=620,ptmxmode=000
+# Bind mounts utama (gunakan rbind + rslave untuk recursive & slave)
+mount --rbind /dev     /mnt/leakos/dev
+mount --make-rslave    /mnt/leakos/dev
+
+mount --rbind /proc    /mnt/leakos/proc
+mount --make-rslave    /mnt/leakos/proc
+
+mount --rbind /sys     /mnt/leakos/sys
+mount --make-rslave    /mnt/leakos/sys
+
+mount --rbind /run     /mnt/leakos/run
+mount --make-rslave    /mnt/leakos/run
+
+# Mount devpts TERPISAH & EKSPRESIF (ini yang paling sering hilang & bikin error PTY)
+mount -t devpts devpts /mnt/leakos/dev/pts -o gid=5,mode=620,ptmxmode=000
+
+# Opsional: bind /dev/shm jika butuh shared memory
+mkdir -p /mnt/leakos/dev/shm
+mount --bind /dev/shm /mnt/leakos/dev/shm
 
 mkdir -p /mnt/leakos/run/dbus
 mkdir -p /mnt/leakos/run/user
