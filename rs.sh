@@ -446,7 +446,7 @@ mount "$ROOT_PART" /mnt/leakos
 
 
 rsync -aH --info=progress2 / /mnt/leakos \
-    --exclude={/dev/*,/proc/*,/sys/*,/run/*,/tmp/*,/mnt/*,/media/*,/lost+found,/var/log/*,/var/cache/*,/etc/fstab,/etc/hostname,/etc/shadow,/etc/passwd,/etc/sudoers,/boot/grub/*}
+    --exclude={/dev/*,/proc/*,/sys/*,/run/*,/tmp/*,/mnt/*,/media/*,/lost+found,/var/log/*,/var/cache/*,/etc/fstab,/etc/hostname,/etc/shadow,/etc/passwd,/etc/group,/etc/sudoers,/boot/grub/*}
 
 
 
