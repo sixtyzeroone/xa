@@ -514,149 +514,69 @@ echo "UUID      : $ROOT_UUID"
 echo "PARTUUID  : $ROOT_PARTUUID"
 sleep 2
 
-cat > /mnt/leakos/etc/passwd << 'PASSWDEOF'
+
+
+chroot /mnt/leakos /bin/bash <<EOF
+set -e
+echo "$HOSTNAME" > /etc/hostname
+
+useradd -m -G wheel -s /bin/bash "$USERNAME" 2>/dev/null || useradd -m -s /bin/bash "$USERNAME"
+echo "$USERNAME:$PASSWORD" | chpasswd
+
+
+# Overwrite passwd/group/shadow minimal + tambah user leakos
+cat > /etc/passwd <<'PASSWD'
 root:x:0:0:root:/root:/bin/bash
 bin:x:1:1:bin:/bin:/sbin/nologin
 daemon:x:2:2:daemon:/sbin:/sbin/nologin
 adm:x:3:4:adm:/var/adm:/sbin/nologin
 lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin
-sync:x:5:0:sync:/sbin:/bin/sync
-shutdown:x:6:0:shutdown:/sbin:/sbin/shutdown
-halt:x:7:0:halt:/sbin:/sbin/halt
-mail:x:8:12:mail:/var/spool/mail:/sbin/nologin
-operator:x:11:0:operator:/root:/sbin/nologin
+sync:x:5:5:sync:/sbin:/bin/sync
 games:x:12:100:games:/usr/games:/sbin/nologin
-ftp:x:14:50:FTP User:/var/ftp:/sbin/nologin
-nobody:x:65534:65534:Kernel Overflow User:/:/sbin/nologin
-dbus:x:81:81:System message bus:/:/sbin/nologin
-systemd-coredump:x:999:999:systemd Core Dumper:/:/sbin/nologin
-systemd-resolve:x:193:193:systemd Resolver:/:/sbin/nologin
-messagebus:x:100:101:User for D-Bus:/run/dbus:/sbin/nologin
-PASSWDEOF
+nobody:x:65534:65534:nobody:/:/sbin/nologin
+dbus:x:81:81:dbus:/:/sbin/nologin
+messagebus:x:100:101:messagebus:/run/dbus:/sbin/nologin
+$USERNAME:x:1000:1000::/home/$USERNAME:/bin/bash
+apache:x:33:33:Apache:/var/www:/sbin/nologin
+PASSWD
 
-# Buat file group dasar
-cat > /mnt/leakos/etc/group << 'GROUPEOF'
+cat > /etc/group <<'GROUP'
 root:x:0:
-bin:x:1:
-daemon:x:2:
-sys:x:3:
-adm:x:4:
-tty:x:5:
-disk:x:6:
-lp:x:7:
-mem:x:8:
-kmem:x:9:
 wheel:x:10:
-cdrom:x:11:
-mail:x:12:
-man:x:15:
-dialout:x:18:
-floppy:x:19:
-games:x:20:
-tape:x:33:
-video:x:39:
-ftp:x:50:
-lock:x:54:
-audio:x:63:
-nobody:x:65534:
 users:x:100:
 dbus:x:81:
-systemd-journal:x:190:
-systemd-coredump:x:999:
 messagebus:x:101:
-GROUPEOF
+apache:x:33:
+GROUP
 
-# Buat file shadow dasar
-cat > /mnt/leakos/etc/shadow << 'SHADOWEOF'
+cat > /etc/shadow <<'SHADOW'
 root:*:19701:0:99999:7:::
 bin:*:19701:0:99999:7:::
 daemon:*:19701:0:99999:7:::
 adm:*:19701:0:99999:7:::
 lp:*:19701:0:99999:7:::
 sync:*:19701:0:99999:7:::
-shutdown:*:19701:0:99999:7:::
-halt:*:19701:0:99999:7:::
-mail:*:19701:0:99999:7:::
-operator:*:19701:0:99999:7:::
 games:*:19701:0:99999:7:::
-ftp:*:19701:0:99999:7:::
 nobody:*:19701:0:99999:7:::
 dbus:*:19701:0:99999:7:::
-systemd-coredump:*:19701:0:99999:7:::
-systemd-resolve:*:19701:0:99999:7:::
 messagebus:*:19701:0:99999:7:::
-SHADOWEOF
+$USERNAME:*:19701:0:99999:7:::
+apache:*:19701:0:99999:7:::
+SHADOW
 
-# Set permission yang benar
-chmod 644 /mnt/leakos/etc/passwd
-chmod 644 /mnt/leakos/etc/group
-chmod 000 /mnt/leakos/etc/shadow
+chmod 644 /etc/passwd /etc/group
+chmod 000 /etc/shadow
+chown root:root /etc/passwd /etc/group /etc/shadow
 
-chroot /mnt/leakos /bin/bash <<EOF
-set -e
-# Buat ulang user database jika perlu
 pwconv
 grpconv
 
-# Pastikan dbus user ada
-if ! id dbus &>/dev/null; then
-    useradd -r -s /sbin/nologin -c "D-Bus System Daemon" dbus 2>/dev/null || true
-fi
-
-# Pastikan messagebus user ada (untuk dbus)
-if ! id messagebus &>/dev/null; then
-    useradd -r -s /sbin/nologin -c "Message Bus User" messagebus 2>/dev/null || true
-fi
-
-# Pastikan user apache/www-data ada untuk PHP
-if ! id apache &>/dev/null && ! id www-data &>/dev/null; then
-    groupadd -r apache 2>/dev/null || true
-    useradd -r -g apache -s /sbin/nologin -c "Apache Server" apache 2>/dev/null || true
-fi
-
-# PERBAIKAN 2: Perbaiki ownership file-file sistem
-echo "Memperbaiki ownership file..."
-
-# Core system files
-chown root:root /etc/passwd /etc/group /etc/shadow /etc/gshadow 2>/dev/null || true
-chmod 644 /etc/passwd /etc/group
-chmod 000 /etc/shadow
-
-# D-Bus directories
-mkdir -p /var/run/dbus /run/dbus /run/user
-chown messagebus:messagebus /var/run/dbus /run/dbus 2>/dev/null || true
-chmod 755 /var/run/dbus /run/dbus
-
-# PERBAIKAN 3: Regenerate dbus config
-echo "Regenerasi konfigurasi dbus..."
-if command -v dbus-uuidgen >/dev/null; then
-    dbus-uuidgen --ensure 2>/dev/null || true
-fi
-
-# Pastikan machine-id ada
-if [ ! -f /etc/machine-id ]; then
-    dbus-uuidgen > /etc/machine-id 2>/dev/null || echo "unique" > /etc/machine-id
-fi
-
-# PERBAIKAN 4: Cek dan perbaiki shadow
-echo "Memeriksa shadow file..."
-pwck -s 2>/dev/null || true
-grpck -s 2>/dev/null || true
-
-# Lanjut dengan konfigurasi lain...
-EOFCHROOT
 
 
-
-
-
-
-
-echo "$HOSTNAME" > /etc/hostname
-
-useradd -m -G wheel -s /bin/bash "$USERNAME" 2>/dev/null || useradd -m -s /bin/bash "$USERNAME"
-echo "$USERNAME:$PASSWORD" | chpasswd
 echo "%wheel ALL=(ALL) ALL" > /etc/sudoers.d/wheel 2>/dev/null || echo "$USERNAME ALL=(ALL) ALL" >> /etc/sudoers
+
+
+
 
 echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
 echo "id_ID.UTF-8 UTF-8" >> /etc/locale.gen
@@ -672,10 +592,9 @@ hwclock --systohc --utc || true
 cat > /etc/fstab <<EOT
 UUID=$ROOT_UUID / ext4 defaults 0 1
 tmpfs /tmp tmpfs defaults,noatime,mode=1777 0 0
+tmpfs /run tmpfs defaults,noatime,mode=0755,nodev,nosuid 0 0
 proc /proc proc defaults 0 0
 sysfs /sys sysfs defaults 0 0
-tmpfs /run tmpfs defaults,noatime,mode=0755 0 0
-tmpfs /run/user tmpfs defaults,noatime,mode=0755 0 0
 EOT
 
 cat > /etc/hosts <<EOT
@@ -687,6 +606,11 @@ ff00::0 ip6-mcastprefix
 ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
 EOT
+
+mkdir -p /run/dbus /var/run/dbus
+chown messagebus:messagebus /run/dbus /var/run/dbus 2>/dev/null || true
+chmod 755 /run/dbus /var/run/dbus
+dbus-uuidgen --ensure=/etc/machine-id 2>/dev/null || echo "unique-$(date +%s)" > /etc/machine-id
 
 grub-install --target=i386-pc --recheck "$TARGET_DISK" || grub-install "$TARGET_DISK" || echo "WARNING: GRUB install mungkin gagal"
 
