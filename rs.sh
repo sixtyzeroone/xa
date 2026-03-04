@@ -296,6 +296,18 @@ if [ "$PASSWORD" != "$PASSWORD2" ] || [ -z "$PASSWORD" ]; then
     exit 1
 fi
 
+echo -n "Password untuk root: "
+read -s ROOT_PASSWORD
+echo ""
+echo -n "Konfirmasi password root: "
+read -s ROOT_PASSWORD2
+echo ""
+
+if [ "$ROOT_PASSWORD" != "$ROOT_PASSWORD2" ] || [ -z "$ROOT_PASSWORD" ]; then
+    echo -e "${RED}ERROR: Password root tidak cocok atau kosong.${NC}"
+    exit 1
+fi
+
 # =============================================================================
 # TIMEZONE (menggunakan fungsi yang kamu berikan)
 # =============================================================================
@@ -434,7 +446,7 @@ mount "$ROOT_PART" /mnt/leakos
 
 
 rsync -aH --info=progress2 / /mnt/leakos \
-    --exclude={/dev/*,/proc/*,/sys/*,/run/*,/tmp/*,/mnt/*,/media/*,/lost+found,/var/log/*,/var/cache/*,/etc/fstab,/etc/hostname,/etc/shadow,/etc/passwd,/boot/grub/*}
+    --exclude={/dev/*,/proc/*,/sys/*,/run/*,/tmp/*,/mnt/*,/media/*,/lost+found,/var/log/*,/var/cache/*,/etc/fstab,/etc/hostname,/etc/shadow,/etc/passwd,/etc/sudoers,/boot/grub/*}
 
 
 
@@ -518,54 +530,8 @@ echo "$HOSTNAME" > /etc/hostname
 
 useradd -m -G wheel -s /bin/bash "$USERNAME" 2>/dev/null || useradd -m -s /bin/bash "$USERNAME"
 echo "$USERNAME:$PASSWORD" | chpasswd
+echo "root:$ROOT_PASSWORD" | chpasswd
 
-
-# Overwrite passwd/group/shadow minimal + tambah user leakos
-cat > /etc/passwd <<'PASSWD'
-root:x:0:0:root:/root:/bin/bash
-bin:x:1:1:bin:/bin:/sbin/nologin
-daemon:x:2:2:daemon:/sbin:/sbin/nologin
-adm:x:3:4:adm:/var/adm:/sbin/nologin
-lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin
-sync:x:5:5:sync:/sbin:/bin/sync
-games:x:12:100:games:/usr/games:/sbin/nologin
-nobody:x:65534:65534:nobody:/:/sbin/nologin
-dbus:x:81:81:dbus:/:/sbin/nologin
-messagebus:x:100:101:messagebus:/run/dbus:/sbin/nologin
-$USERNAME:x:1000:1000::/home/$USERNAME:/bin/bash
-apache:x:33:33:Apache:/var/www:/sbin/nologin
-PASSWD
-
-cat > /etc/group <<'GROUP'
-root:x:0:
-wheel:x:10:
-users:x:100:
-dbus:x:81:
-messagebus:x:101:
-apache:x:33:
-GROUP
-
-cat > /etc/shadow <<'SHADOW'
-root:*:19701:0:99999:7:::
-bin:*:19701:0:99999:7:::
-daemon:*:19701:0:99999:7:::
-adm:*:19701:0:99999:7:::
-lp:*:19701:0:99999:7:::
-sync:*:19701:0:99999:7:::
-games:*:19701:0:99999:7:::
-nobody:*:19701:0:99999:7:::
-dbus:*:19701:0:99999:7:::
-messagebus:*:19701:0:99999:7:::
-$USERNAME:*:19701:0:99999:7:::
-apache:*:19701:0:99999:7:::
-SHADOW
-
-chmod 644 /etc/passwd /etc/group
-chmod 000 /etc/shadow
-chown root:root /etc/passwd /etc/group /etc/shadow
-
-pwconv
-grpconv
 
 
 
