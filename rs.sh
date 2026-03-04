@@ -610,7 +610,7 @@ echo "$USERNAME:$PASSWORD" | chpasswd
 
 echo "%wheel ALL=(ALL) ALL" > /etc/sudoers.d/wheel 2>/dev/null
 
-cat > /etc/sudoers << 'SUDOERS'
+cat > /etc/sudoers << SUDOERS
 # sudoers file.
 #
 # This file MUST be edited with the 'visudo' command as root.
