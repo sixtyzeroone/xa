@@ -607,22 +607,22 @@ echo -e "\033[0;32m[4/8] MEMBUAT USER BIASA...\033[0m"
 
 # Buat user biasa dengan home directory
 useradd -m -G wheel -s /bin/bash "$USERNAME" 2>/dev/null || echo "User $USERNAME sudah ada"
-
-# Set password lagi untuk memastikan
-echo "$USERNAME:$PASSWORD" | chpasswd
-
-
 # =============================================================================
-# TAMBAHKAN XDG DIRECTORIES DI SINI
+# XDG USER DIRECTORIES
 # =============================================================================
-echo -e "\033[0;32m[*] MENGATUR DIREKTORI XDG (Desktop, Downloads, dll)...\033[0m"
+echo -e "\033[0;32m[5/8] MENGATUR DIREKTORI HOME (XDG)...\033[0m"
 
-# 1. Buat folder fisik secara manual (agar tidak butuh PTY/terminal baru)
-mkdir -p /home/"$USERNAME"/{Desktop,Downloads,Documents,Music,Pictures,Videos,Public,Templates}
-mkdir -p /home/"$USERNAME"/.config
+# Buat folder standar
+mkdir -p /home/$USERNAME/{Desktop,Documents,Downloads,Music,Pictures,Videos,Public,Templates}
 
-# 2. Buat file konfigurasi pemetaan folder
-cat > /home/"$USERNAME"/.config/user-dirs.dirs <<XDGEOF
+# Permission
+chown -R $USERNAME:users /home/$USERNAME
+chmod 755 /home/$USERNAME
+
+# Konfigurasi XDG
+mkdir -p /home/$USERNAME/.config
+
+cat > /home/$USERNAME/.config/user-dirs.dirs <<XDG
 XDG_DESKTOP_DIR="\$HOME/Desktop"
 XDG_DOWNLOAD_DIR="\$HOME/Downloads"
 XDG_TEMPLATES_DIR="\$HOME/Templates"
@@ -631,15 +631,16 @@ XDG_DOCUMENTS_DIR="\$HOME/Documents"
 XDG_MUSIC_DIR="\$HOME/Music"
 XDG_PICTURES_DIR="\$HOME/Pictures"
 XDG_VIDEOS_DIR="\$HOME/Videos"
-XDGEOF
+XDG
 
-# 3. Pastikan izin akses benar milik user (UID 1000)
-chown -R "$USERNAME":"$USERNAME" /home/"$USERNAME"
+chown -R $USERNAME:users /home/$USERNAME/.config
 
-# 4. Copy ke /etc/skel agar user lain di masa depan juga punya folder ini
-mkdir -p /etc/skel/.config
-cp /home/"$USERNAME"/.config/user-dirs.dirs /etc/skel/.config/
-# =============================================================================
+
+# Set password lagi untuk memastikan
+echo "$USERNAME:$PASSWORD" | chpasswd
+
+
+
 
 
 cat > /etc/sudoers << 'SUDOERS'
