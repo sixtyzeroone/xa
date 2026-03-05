@@ -464,8 +464,9 @@ mkdir -p /mnt/leakos/{dev/pts,proc,sys,run}
 
 # Bind mounts utama (gunakan rbind + rslave untuk recursive & slave)
 # Mount dasar
+# 2. Mount API Virtual File Systems (PENTING: Urutan Berpengaruh)
 mount -v --bind /dev /mnt/leakos/dev
-mount -v --bind /dev/pts /mnt/leakos/dev/pts
+mount -vt devpts devpts /mnt/leakos/dev/pts -o gid=5,mode=620
 mount -vt proc proc /mnt/leakos/proc
 mount -vt sysfs sysfs /mnt/leakos/sys
 mount -vt tmpfs tmpfs /mnt/leakos/run
