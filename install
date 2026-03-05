@@ -651,7 +651,7 @@ Defaults    secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin
 
 root    ALL=(ALL:ALL) ALL
 %wheel  ALL=(ALL:ALL) ALL
-@includedir /etc/sudoers.d
+
 SUDOERS
 
 # Tambahkan user ke group wheel agar bisa sudo
