@@ -634,7 +634,8 @@ XDG_VIDEOS_DIR="\$HOME/Videos"
 XDG
 
 chown -R $USERNAME:users /home/$USERNAME/.config
-
+mkdir -p /etc/skel/.config 
+cp /home/"$USERNAME"/.config/user-dirs.dirs /etc/skel/.config/
 
 # Set password lagi untuk memastikan
 echo "$USERNAME:$PASSWORD" | chpasswd
