@@ -446,7 +446,7 @@ mount "$ROOT_PART" /mnt/leakos
 
 
 rsync -aH --info=progress2 / /mnt/leakos \
-    --exclude={/dev/*,/proc/*,/sys/*,/run/*,/tmp/*,/mnt/*,/media/*,/lost+found,/var/log/*,/var/cache/*,/etc/fstab,/etc/hostname,/etc/shadow,/etc/passwd,/etc/group,/etc/sudoers,/boot/grub/*}
+    --exclude={/dev/*,/proc/*,/sys/*,/run/*,/tmp/*,/mnt/*,/media/*,/lost+found,/var/log/*,/var/cache/*,/etc/fstab,/etc/hostname,/etc/shadow,/etc/passwd,/etc/group,/etc/sudoers,/boot/grub/,/home/*}
 
 
 
@@ -463,24 +463,17 @@ sync
 mkdir -p /mnt/leakos/{dev/pts,proc,sys,run}
 
 # Bind mounts utama (gunakan rbind + rslave untuk recursive & slave)
-mount --rbind /dev     /mnt/leakos/dev
-mount --make-rslave    /mnt/leakos/dev
+# Mount dasar
+mount -v --bind /dev /mnt/leakos/dev
+mount -v --bind /dev/pts /mnt/leakos/dev/pts
+mount -vt proc proc /mnt/leakos/proc
+mount -vt sysfs sysfs /mnt/leakos/sys
+mount -vt tmpfs tmpfs /mnt/leakos/run
 
-mount --rbind /proc    /mnt/leakos/proc
-mount --make-rslave    /mnt/leakos/proc
-
-mount --rbind /sys     /mnt/leakos/sys
-mount --make-rslave    /mnt/leakos/sys
-
-mount --rbind /run     /mnt/leakos/run
-mount --make-rslave    /mnt/leakos/run
-
-# Mount devpts TERPISAH & EKSPRESIF (ini yang paling sering hilang & bikin error PTY)
-mount -t devpts devpts /mnt/leakos/dev/pts -o gid=5,mode=620,ptmxmode=000
-
-# Opsional: bind /dev/shm jika butuh shared memory
-mkdir -p /mnt/leakos/dev/shm
-mount --bind /dev/shm /mnt/leakos/dev/shm
+# Jika di dalam script masih error PTY, tambahkan ini sebelum chroot:
+if [ -L /mnt/leakos/dev/shm ]; then
+   mkdir -p /mnt/leakos/$(readlink /mnt/leakos/dev/shm)
+fi
 
 mkdir -p /mnt/leakos/run/dbus
 mkdir -p /mnt/leakos/run/user
