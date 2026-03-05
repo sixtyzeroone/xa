@@ -462,19 +462,16 @@ sync
 # Sebelum chroot, pastikan mount lengkap
 mkdir -p /mnt/leakos/{dev/pts,proc,sys,run}
 
-# Bind mounts utama (gunakan rbind + rslave untuk recursive & slave)
-# Mount dasar
-# 2. Mount API Virtual File Systems (PENTING: Urutan Berpengaruh)
-mount -v --bind /dev /mnt/leakos/dev
-mount -vt devpts devpts /mnt/leakos/dev/pts -o gid=5,mode=620
-mount -vt proc proc /mnt/leakos/proc
-mount -vt sysfs sysfs /mnt/leakos/sys
-mount -vt tmpfs tmpfs /mnt/leakos/run
+# Sebelum chroot
+umount -R /mnt/leakos/dev{,/pts} 2>/dev/null || true
 
-# Jika di dalam script masih error PTY, tambahkan ini sebelum chroot:
-if [ -L /mnt/leakos/dev/shm ]; then
-   mkdir -p /mnt/leakos/$(readlink /mnt/leakos/dev/shm)
-fi
+mount --rbind /dev /mnt/leakos/dev
+mount --make-rslave /mnt/leakos/dev
+mount -t devpts -o gid=5,mode=620,nosuid,noexec devpts /mnt/leakos/dev/pts
+
+mount -t proc proc /mnt/leakos/proc
+mount -t sysfs sysfs /mnt/leakos/sys
+mount -t tmpfs tmpfs /mnt/leakos/run
 
 mkdir -p /mnt/leakos/run/dbus
 mkdir -p /mnt/leakos/run/user
