@@ -638,8 +638,38 @@ cp /home/"$USERNAME"/.config/user-dirs.dirs /etc/skel/.config/
 echo "$USERNAME:$PASSWORD" | chpasswd
 
 
+BASHRC_URL="https://raw.githubusercontent.com/username-kamu/leakos-dotfiles/main/.bashrc"
+XRESOURCES_URL="https://raw.githubusercontent.com/username-kamu/leakos-dotfiles/main/.Xresources"
 
+# Contoh 2: Pakai repo populer (dark theme bagus untuk terminal/pentest)
+# BASHRC_URL="https://raw.githubusercontent.com/zachbrowne/8bc414c9f30192067831fafebd14255c/master/.bashrc"  # The Ultimate Bad Ass .bashrc
+# XRESOURCES_URL="https://raw.githubusercontent.com/dracula/xresources/master/Xresources"  # Dracula theme (sangat populer)
 
+# Download .bashrc
+if curl -fsSL "$BASHRC_URL" -o /home/$USERNAME/.bashrc; then
+    echo "✅ .bashrc berhasil di-download dari $BASHRC_URL"
+    chown $USERNAME:users /home/$USERNAME/.bashrc
+    chmod 644 /home/$USERNAME/.bashrc
+    
+    # Copy ke skel untuk user baru
+    mkdir -p /etc/skel
+    cp /home/$USERNAME/.bashrc /etc/skel/.bashrc
+fi
+
+# Download .Xresources
+if curl -fsSL "$XRESOURCES_URL" -o /home/$USERNAME/.Xresources; then
+    echo "✅ .Xresources berhasil di-download dari $XRESOURCES_URL"
+    chown $USERNAME:users /home/$USERNAME/.Xresources
+    chmod 644 /home/$USERNAME/.Xresources
+    
+    # Copy ke skel
+    cp /home/$USERNAME/.Xresources /etc/skel/.Xresources
+    
+    # Optional: load langsung supaya langsung terlihat kalau test di chroot
+    xrdb -merge /home/$USERNAME/.Xresources 2>/dev/null || true
+else
+    echo -e "\033[0;33m⚠️ Gagal download .Xresources. Skip atau pakai default.\033[0m"
+fi
 
 cat > /etc/sudoers << 'SUDOERS'
 Defaults    env_reset
@@ -659,6 +689,41 @@ echo "$USERNAME ALL=(ALL:ALL) ALL" > /etc/sudoers.d/99-leakos-user
 
 chmod 440 /etc/sudoers
 chmod 440 /etc/sudoers.d/99-leakos-user
+
+# =============================================================================
+# BUAT USER & GROUP UNTUK PULSEAUDIO (agar kompatibel kalau install pulseaudio nanti)
+# =============================================================================
+echo -e "\033[0;32m[Setup user/group untuk PulseAudio]\033[0m"
+
+# Buat group pulse dan pulse-access (system groups)
+groupadd -r -g 1001 pulse 2>/dev/null || echo "Group pulse sudah ada"
+groupadd -r -g 1002 pulse-access 2>/dev/null || echo "Group pulse-access sudah ada"
+
+# Buat user pulse (system user, no login shell, home di /var/run/pulse)
+if ! id pulse >/dev/null 2>&1; then
+    useradd -r -u 1001 \
+            -g pulse \
+            -G audio,pulse-access,lp \
+            -d /var/run/pulse \
+            -s /usr/bin/nologin \
+            -c "PulseAudio System User" \
+            pulse
+    echo "✅ User 'pulse' dibuat."
+else
+    echo "User 'pulse' sudah ada."
+fi
+
+# Buat direktori runtime PulseAudio
+mkdir -p /var/run/pulse
+chown -R pulse:pulse /var/run/pulse
+chmod 755 /var/run/pulse
+
+# Opsional: tambah user leakos ke group audio & pulse-access (supaya bisa akses sound tanpa sudo)
+usermod -aG audio,pulse-access "$USERNAME" 2>/dev/null || true
+echo "User $USERNAME ditambahkan ke group audio & pulse-access (untuk akses sound)."
+
+# Opsional: kalau mau enable PulseAudio system-wide (tidak direkomendasikan default, tapi untuk kompatibilitas)
+# echo "Untuk enable system-wide PulseAudio: systemctl --system enable --now pulseaudio"
 
 
 echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
