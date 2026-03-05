@@ -795,8 +795,7 @@ GRUBEOF
 
 # Download pentest tools
 if [ ${#SELECTED_CATEGORIES[@]} -gt 0 ]; then
-    mkdir -p /opt/pentest-tools
-    cd /opt/pentest-tools
+    cd /usr/share
     for cat in ${CATEGORIES_STRING}; do
         case \$cat in
             1)
