@@ -472,10 +472,10 @@ mount -t proc proc /mnt/leakos/proc
 mount -t sysfs sysfs /mnt/leakos/sys
 mount --bind /run /mnt/leakos/run
 
-# Verifikasi mounting
-echo -e "${GREEN}Verifikasi mount points:${NC}"
-ls -la /mnt/leakos/dev/pts/ | head -5
-echo ""
+if [ ! -e /mnt/leakos/dev/pts/0 ]; then
+    echo "Memperbaiki PTY..."
+    mount --bind /dev/pts /mnt/leakos/dev/pts
+fi
 
 # =============================================================================
 # PENTEST TOOLS
