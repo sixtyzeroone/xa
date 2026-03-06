@@ -696,14 +696,55 @@ chmod 440 /etc/sudoers
 chmod 440 /etc/sudoers.d/99-leakos-user
 
 # =============================================================================
-# BUAT USER & GROUP UNTUK PULSEAUDIO (agar kompatibel kalau install pulseaudio nanti)
+# BUAT GROUP-GROUP STANDAR YANG DIPERLUKAN
+# =============================================================================
+echo -e "\033[0;32m[Setup group standar sistem]\033[0m"
+
+# Buat group-group standar yang mungkin diperlukan
+groupadd -f -r audio 2>/dev/null || echo "Group audio sudah ada atau dibuat"
+groupadd -f -r video 2>/dev/null || echo "Group video sudah ada atau dibuat"
+groupadd -f -r lp 2>/dev/null || echo "Group lp sudah ada atau dibuat"
+groupadd -f -r cdrom 2>/dev/null || echo "Group cdrom sudah ada atau dibuat"
+groupadd -f -r plugdev 2>/dev/null || echo "Group plugdev sudah ada atau dibuat"
+
+# Tampilkan group yang sudah ada
+echo "Group yang tersedia:"
+getent group | grep -E "audio|video|lp|cdrom|plugdev" | cut -d: -f1 | tr '\n' ' '
+echo ""
+
+# =============================================================================
+# BUAT USER & GROUP UNTUK PULSEAUDIO
 # =============================================================================
 echo -e "\033[0;32m[Setup user/group untuk PulseAudio]\033[0m"
 
-# Buat user jika belum ada
-if ! id "\$USERNAME" &>/dev/null; then
-    useradd -m -G wheel,audio,video,users -s /bin/bash "\$USERNAME"
+# Buat group pulse dan pulse-access (system groups)
+groupadd -f -r pulse 2>/dev/null || echo "Group pulse sudah ada"
+groupadd -f -r pulse-access 2>/dev/null || echo "Group pulse-access sudah ada"
+
+# Buat user pulse (system user, no login shell, home di /var/run/pulse)
+if ! id pulse >/dev/null 2>&1; then
+    useradd -r -u 1001 \
+            -g pulse \
+            -G audio,pulse-access,lp \
+            -d /var/run/pulse \
+            -s /usr/sbin/nologin \
+            -c "PulseAudio System User" \
+            pulse 2>/dev/null || echo "Gagal membuat user pulse, mungkin sudah ada"
+    echo "✅ User 'pulse' dibuat."
+else
+    echo "User 'pulse' sudah ada."
 fi
+
+# Pastikan user pulse memiliki group yang benar
+usermod -a -G audio,pulse-access,lp pulse 2>/dev/null || true
+
+# Buat direktori runtime PulseAudio
+mkdir -p /var/run/pulse
+chown -R pulse:pulse /var/run/pulse 2>/dev/null || chown -R pulse:audio /var/run/pulse
+chmod 755 /var/run/pulse
+
+# Tambah user biasa ke group audio, video, dan pulse-access
+usermod -a -G audio,video,pulse-access,cdrom,plugdev "$USERNAME" 2>/dev/null || true
 
 # Buat direktori runtime PulseAudio
 mkdir -p /var/run/pulse
