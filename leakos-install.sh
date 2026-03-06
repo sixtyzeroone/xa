@@ -531,14 +531,11 @@ echo "UUID      : $ROOT_UUID"
 echo "PARTUUID  : $ROOT_PARTUUID"
 sleep 2
 
-#BASHRC_URL="https://raw.githubusercontent.com/sixtyzeroone/xa/main/.bashrc"
 XRESOURCES_URL="https://raw.githubusercontent.com/sixtyzeroone/xa/main/.Xresources"
 
 chroot /mnt/leakos /bin/bash <<EOF
 set -e
-
-#BASHRC_URL="$BASHRC_URL"
-#XRESOURCES_URL="$XRESOURCES_URL"
+XRESOURCES_URL="$XRESOURCES_URL"
 
 echo "$HOSTNAME" > /etc/hostname
 
@@ -650,17 +647,6 @@ echo "$USERNAME:$PASSWORD" | chpasswd
 # Contoh 2: Pakai repo populer (dark theme bagus untuk terminal/pentest)
 # BASHRC_URL="https://raw.githubusercontent.com/zachbrowne/8bc414c9f30192067831fafebd14255c/master/.bashrc"  # The Ultimate Bad Ass .bashrc
 # XRESOURCES_URL="https://raw.githubusercontent.com/dracula/xresources/master/Xresources"  # Dracula theme (sangat populer)
-
-# Download .bashrc
-#if curl -fsSL "\$BASHRC_URL" -o /home/$USERNAME/.bashrc; then
-    #echo "✅ .bashrc berhasil di-download dari $BASHRC_URL"
-    #chown $USERNAME:users /home/$USERNAME/.bashrc
-    #chmod 644 /home/$USERNAME/.bashrc
-    
-    # Copy ke skel untuk user baru
-    #mkdir -p /etc/skel
-    #cp /home/$USERNAME/.bashrc /etc/skel/.bashrc
-#fi
 
 # Download .Xresources
 if curl -fsSL "\$XRESOURCES_URL" -o /home/$USERNAME/.Xresources; then
