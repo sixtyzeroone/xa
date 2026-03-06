@@ -778,6 +778,32 @@ chmod 755 /var/run/pulse
 # echo "Untuk enable system-wide PulseAudio: systemctl --system enable --now pulseaudio"
 
 
+# =============================================================================
+# BUAT USER UNTUK AVAHI
+# =============================================================================
+echo -e "\033[0;32m[Setup user Avahi]\033[0m"
+
+# Buat group avahi jika belum ada
+groupadd -f -r avahi 2>/dev/null || echo "Group avahi sudah ada"
+
+# Buat user avahi (system user)
+if ! id avahi >/dev/null 2>&1; then
+    useradd -r -u 102 \
+            -g avahi \
+            -d /var/run/avahi-daemon \
+            -s /usr/sbin/nologin \
+            -c "Avahi mDNS/DNS-SD Daemon" \
+            avahi 2>/dev/null || echo "Gagal membuat user avahi"
+    echo "✅ User 'avahi' dibuat."
+else
+    echo "User 'avahi' sudah ada."
+fi
+
+# Buat direktori untuk avahi
+mkdir -p /var/run/avahi-daemon
+chown -R avahi:avahi /var/run/avahi-daemon 2>/dev/null || true
+chmod 755 /var/run/avahi-daemon
+
 echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
 echo "id_ID.UTF-8 UTF-8" >> /etc/locale.gen
 echo "LANG=en_US.UTF-8" > /etc/locale.conf
