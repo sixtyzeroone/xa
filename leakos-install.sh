@@ -678,7 +678,7 @@ fi
 
 
 # Di bagian /root/.bashrc, ganti:
-cat > /root/.bashrc <<EOF
+cat > /root/.bashrc << 'BASHRC'
 # /root/.bashrc - hanya untuk root
 
 export TERM=xterm-256color
@@ -698,10 +698,10 @@ unset PROMPT_COMMAND 2>/dev/null
 
 # Prompt Parrot/Kali style untuk root
 export PS1='\[\033[1;31m\]┌──(\[\033[1;91m\]\u㉿\h\[\033[1;31m\])-[\[\033[1;96m\]\w\[\033[1;31m\]]\n└─\[\033[1;91m\]#\[\033[0m\] '
-EOF
+BASHRC
 
 # Di bagian /etc/bash.bashrc, ganti:
-cat > /etc/bash.bashrc <<'EOF'
+cat > /etc/bash.bashrc << 'GLOBALBASHRC'
 # /etc/bash.bashrc - Global Bash Configuration (LeakOS)
 
 # =========================================================
@@ -759,8 +759,7 @@ fi
 if [ "$EUID" -ne 0 ]; then
     PS1="${GREEN}\u@\h${RESET}:${BLUE}\w${RESET}$ "
 fi
-
-EOF
+GLOBALBASHRC
 
 
 cat > /etc/sudoers << 'SUDOERS'
