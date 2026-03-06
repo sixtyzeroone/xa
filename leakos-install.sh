@@ -21,8 +21,9 @@ if [ -t 1 ] && command -v tput >/dev/null 2>&1 && [ "$(tput colors 2>/dev/null |
     BLINK='\033[5m'  # <-- TAMBAHKAN INI
     BOLD='\033[1m'
     NC='\033[0m'
+    RESET='\033[0m'
 else
-    RED='' GREEN='' YELLOW='' BLUE='' CYAN='' BLINK='' BOLD='' NC=''
+    RED='' GREEN='' YELLOW='' BLUE='' CYAN='' BLINK='' BOLD='' NC='' RESET=''
 fi
 
 clear
