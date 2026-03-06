@@ -530,14 +530,14 @@ echo "UUID      : $ROOT_UUID"
 echo "PARTUUID  : $ROOT_PARTUUID"
 sleep 2
 
-BASHRC_URL="https://raw.githubusercontent.com/sixtyzeroone/xa/main/.bashrc"
+#BASHRC_URL="https://raw.githubusercontent.com/sixtyzeroone/xa/main/.bashrc"
 XRESOURCES_URL="https://raw.githubusercontent.com/sixtyzeroone/xa/main/.Xresources"
 
 chroot /mnt/leakos /bin/bash <<EOF
 set -e
 
-BASHRC_URL="$BASHRC_URL"
-XRESOURCES_URL="$XRESOURCES_URL"
+#BASHRC_URL="$BASHRC_URL"
+#XRESOURCES_URL="$XRESOURCES_URL"
 
 echo "$HOSTNAME" > /etc/hostname
 
@@ -651,15 +651,15 @@ echo "$USERNAME:$PASSWORD" | chpasswd
 # XRESOURCES_URL="https://raw.githubusercontent.com/dracula/xresources/master/Xresources"  # Dracula theme (sangat populer)
 
 # Download .bashrc
-if curl -fsSL "\$BASHRC_URL" -o /home/$USERNAME/.bashrc; then
-    echo "✅ .bashrc berhasil di-download dari $BASHRC_URL"
-    chown $USERNAME:users /home/$USERNAME/.bashrc
-    chmod 644 /home/$USERNAME/.bashrc
+#if curl -fsSL "\$BASHRC_URL" -o /home/$USERNAME/.bashrc; then
+    #echo "✅ .bashrc berhasil di-download dari $BASHRC_URL"
+    #chown $USERNAME:users /home/$USERNAME/.bashrc
+    #chmod 644 /home/$USERNAME/.bashrc
     
     # Copy ke skel untuk user baru
-    mkdir -p /etc/skel
-    cp /home/$USERNAME/.bashrc /etc/skel/.bashrc
-fi
+    #mkdir -p /etc/skel
+    #cp /home/$USERNAME/.bashrc /etc/skel/.bashrc
+#fi
 
 # Download .Xresources
 if curl -fsSL "\$XRESOURCES_URL" -o /home/$USERNAME/.Xresources; then
@@ -675,6 +675,94 @@ if curl -fsSL "\$XRESOURCES_URL" -o /home/$USERNAME/.Xresources; then
 else
     echo -e "\033[0;33m⚠️ Gagal download .Xresources. Skip atau pakai default.\033[0m"
 fi
+
+
+cat > /root/.bashrc <<EOF
+# /root/.bashrc - hanya untuk root
+
+export TERM=xterm-256color
+
+# Load alias & setting sistem kalau mau
+if [ -f /etc/bash.bashrc ]; then
+    . /etc/bash.bashrc
+fi
+
+# Auto load Xresources jika X aktif
+if [[ -n "\$DISPLAY" ]] && command -v xrdb >/dev/null 2>&1; then
+    xrdb -merge /home/$USERNAME/.Xresources
+fi
+
+# Pastikan PROMPT_COMMAND tidak mengganggu
+unset PROMPT_COMMAND 2>/dev/null
+
+# Prompt Parrot/Kali style untuk root
+export PS1='\[\033[1;31m\]┌──(\[\033[1;91m\]\u㉿\h\[\033[1;31m\])-[\[\033[1;96m\]\w\[\033[1;31m\]]\n└─\[\033[1;91m\]#\[\033[0m\] '
+EOF
+
+
+cat > /etc/bash.bashrc <<'EOF'
+# /etc/bash.bashrc - Global Bash Configuration (LeakOS)
+
+# =========================================================
+# TERMINAL
+# =========================================================
+export TERM=xterm-256color
+
+# =========================================================
+# COLOR SUPPORT
+# =========================================================
+if command -v tput >/dev/null 2>&1 && [ "$(tput colors)" -ge 8 ]; then
+    RED="\[\033[0;31m\]"
+    GREEN="\[\033[0;32m\]"
+    YELLOW="\[\033[1;33m\]"
+    BLUE="\[\033[0;34m\]"
+    CYAN="\[\033[0;36m\]"
+    RESET="\[\033[0m\]"
+fi
+
+# =========================================================
+# HISTORY SETTINGS
+# =========================================================
+HISTSIZE=5000
+HISTFILESIZE=10000
+HISTCONTROL=ignoreboth
+
+# =========================================================
+# BASH OPTIONS
+# =========================================================
+shopt -s histappend
+shopt -s checkwinsize
+
+# =========================================================
+# ALIAS
+# =========================================================
+alias ls='ls --color=auto'
+alias ll='ls -lah'
+alias la='ls -A'
+alias l='ls -CF'
+
+alias grep='grep --color=auto'
+alias df='df -h'
+alias free='free -m'
+
+# =========================================================
+# AUTO LOAD XRESOURCES
+# =========================================================
+if [[ -n "$DISPLAY" ]] && command -v xrdb >/dev/null 2>&1; then
+    [ -f "$HOME/.Xresources" ] && xrdb -merge "$HOME/.Xresources"
+fi
+
+# =========================================================
+# PROMPT (USER)
+# =========================================================
+if [ "$EUID" -ne 0 ]; then
+    PS1="${GREEN}\u@\h${RESET}:${BLUE}\w${RESET}$ "
+fi
+
+EOF
+
+
+
 
 cat > /etc/sudoers << 'SUDOERS'
 Defaults    env_reset
