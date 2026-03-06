@@ -18,10 +18,11 @@ if [ -t 1 ] && command -v tput >/dev/null 2>&1 && [ "$(tput colors 2>/dev/null |
     YELLOW='\033[1;33m'
     BLUE='\033[0;34m'
     CYAN='\033[0;36m'
+    BLINK='\033[5m'  # <-- TAMBAHKAN INI
     BOLD='\033[1m'
     NC='\033[0m'
 else
-    RED='' GREEN='' YELLOW='' BLUE='' CYAN='' BOLD='' NC=''
+    RED='' GREEN='' YELLOW='' BLUE='' CYAN='' BLINK='' BOLD='' NC=''
 fi
 
 clear
@@ -529,10 +530,15 @@ echo "UUID      : $ROOT_UUID"
 echo "PARTUUID  : $ROOT_PARTUUID"
 sleep 2
 
-
+BASHRC_URL="https://raw.githubusercontent.com/sixtyzeroone/xa/main/.bashrc"
+XRESOURCES_URL="https://raw.githubusercontent.com/sixtyzeroone/xa/main/.Xresources"
 
 chroot /mnt/leakos /bin/bash <<EOF
 set -e
+
+BASHRC_URL="$BASHRC_URL"
+XRESOURCES_URL="$XRESOURCES_URL"
+
 echo "$HOSTNAME" > /etc/hostname
 
 # Overwrite passwd/group/shadow minimal + tambah user leakos
@@ -638,15 +644,14 @@ cp /home/"$USERNAME"/.config/user-dirs.dirs /etc/skel/.config/
 echo "$USERNAME:$PASSWORD" | chpasswd
 
 
-BASHRC_URL="https://raw.githubusercontent.com/sixtyzeroone/xa/main/.bashrc"
-XRESOURCES_URL="https://raw.githubusercontent.com/sixtyzeroone/xa/main/.Xresources"
+
 
 # Contoh 2: Pakai repo populer (dark theme bagus untuk terminal/pentest)
 # BASHRC_URL="https://raw.githubusercontent.com/zachbrowne/8bc414c9f30192067831fafebd14255c/master/.bashrc"  # The Ultimate Bad Ass .bashrc
 # XRESOURCES_URL="https://raw.githubusercontent.com/dracula/xresources/master/Xresources"  # Dracula theme (sangat populer)
 
 # Download .bashrc
-if curl -fsSL "$BASHRC_URL" -o /home/$USERNAME/.bashrc; then
+if curl -fsSL "\$BASHRC_URL" -o /home/$USERNAME/.bashrc; then
     echo "✅ .bashrc berhasil di-download dari $BASHRC_URL"
     chown $USERNAME:users /home/$USERNAME/.bashrc
     chmod 644 /home/$USERNAME/.bashrc
@@ -657,7 +662,7 @@ if curl -fsSL "$BASHRC_URL" -o /home/$USERNAME/.bashrc; then
 fi
 
 # Download .Xresources
-if curl -fsSL "$XRESOURCES_URL" -o /home/$USERNAME/.Xresources; then
+if curl -fsSL "\$XRESOURCES_URL" -o /home/$USERNAME/.Xresources; then
     echo "✅ .Xresources berhasil di-download dari $XRESOURCES_URL"
     chown $USERNAME:users /home/$USERNAME/.Xresources
     chmod 644 /home/$USERNAME/.Xresources
@@ -695,22 +700,9 @@ chmod 440 /etc/sudoers.d/99-leakos-user
 # =============================================================================
 echo -e "\033[0;32m[Setup user/group untuk PulseAudio]\033[0m"
 
-# Buat group pulse dan pulse-access (system groups)
-groupadd -r -g 1001 pulse 2>/dev/null || echo "Group pulse sudah ada"
-groupadd -r -g 1002 pulse-access 2>/dev/null || echo "Group pulse-access sudah ada"
-
-# Buat user pulse (system user, no login shell, home di /var/run/pulse)
-if ! id pulse >/dev/null 2>&1; then
-    useradd -r -u 1001 \
-            -g pulse \
-            -G audio,pulse-access,lp \
-            -d /var/run/pulse \
-            -s /usr/bin/nologin \
-            -c "PulseAudio System User" \
-            pulse
-    echo "✅ User 'pulse' dibuat."
-else
-    echo "User 'pulse' sudah ada."
+# Buat user jika belum ada
+if ! id "\$USERNAME" &>/dev/null; then
+    useradd -m -G wheel,audio,video,users -s /bin/bash "\$USERNAME"
 fi
 
 # Buat direktori runtime PulseAudio
@@ -718,9 +710,7 @@ mkdir -p /var/run/pulse
 chown -R pulse:pulse /var/run/pulse
 chmod 755 /var/run/pulse
 
-# Opsional: tambah user leakos ke group audio & pulse-access (supaya bisa akses sound tanpa sudo)
-usermod -aG audio,pulse-access "$USERNAME" 2>/dev/null || true
-echo "User $USERNAME ditambahkan ke group audio & pulse-access (untuk akses sound)."
+
 
 # Opsional: kalau mau enable PulseAudio system-wide (tidak direkomendasikan default, tapi untuk kompatibilitas)
 # echo "Untuk enable system-wide PulseAudio: systemctl --system enable --now pulseaudio"
