@@ -460,22 +460,43 @@ if ! ls /mnt/leakos/boot/vmlinuz* >/dev/null 2>&1; then
 fi
 sync
 
-# Sebelum chroot, pastikan mount lengkap
-mkdir -p /mnt/leakos/{dev/pts,proc,sys,run}
 
-# Sebelum chroot
-umount -R /mnt/leakos/dev{,/pts} 2>/dev/null || true
-
-mount --rbind /dev /mnt/leakos/dev
-mount --make-rslave /mnt/leakos/dev
-mount -t devpts -o gid=5,mode=620,nosuid,noexec devpts /mnt/leakos/dev/pts
-
-mount -t proc proc /mnt/leakos/proc
-mount -t sysfs sysfs /mnt/leakos/sys
-mount -t tmpfs tmpfs /mnt/leakos/run
-
+mkdir -p /mnt/leakos/{dev,proc,sys,run,tmp}
+mkdir -p /mnt/leakos/dev/pts
 mkdir -p /mnt/leakos/run/dbus
 mkdir -p /mnt/leakos/run/user
+
+# Unmount yang mungkin masih ter-mount
+umount -R /mnt/leakos/dev 2>/dev/null || true
+umount -R /mnt/leakos/proc 2>/dev/null || true
+umount -R /mnt/leakos/sys 2>/dev/null || true
+umount -R /mnt/leakos/run 2>/dev/null || true
+
+# Mount dengan urutan yang benar
+mount --rbind /dev /mnt/leakos/dev
+mount --make-rslave /mnt/leakos/dev
+
+# Mount devpts dengan opsi yang benar untuk PTY
+mount -t devpts -o gid=5,mode=620,newinstance,ptmxmode=0666 devpts /mnt/leakos/dev/pts
+
+# Buat symlink ptmx jika belum ada
+if [ ! -L /mnt/leakos/dev/ptmx ]; then
+    ln -sf /dev/pts/ptmx /mnt/leakos/dev/ptmx
+fi
+
+# Mount proc, sys, run
+mount -t proc proc /mnt/leakos/proc
+mount -t sysfs sysfs /mnt/leakos/sys
+mount --rbind /run /mnt/leakos/run
+mount --make-rslave /mnt/leakos/run
+
+# Mount tmpfs untuk /tmp
+mount -t tmpfs tmpfs /mnt/leakos/tmp
+
+# Verifikasi mounting
+echo -e "${GREEN}Verifikasi mount points:${NC}"
+ls -la /mnt/leakos/dev/pts/ | head -5
+echo ""
 
 # =============================================================================
 # PENTEST TOOLS
