@@ -677,6 +677,7 @@ else
 fi
 
 
+# Di bagian /root/.bashrc, ganti:
 cat > /root/.bashrc <<EOF
 # /root/.bashrc - hanya untuk root
 
@@ -688,7 +689,7 @@ if [ -f /etc/bash.bashrc ]; then
 fi
 
 # Auto load Xresources jika X aktif
-if [[ -n "\$DISPLAY" ]] && command -v xrdb >/dev/null 2>&1; then
+if [[ -n "\${DISPLAY:-}" ]] && command -v xrdb >/dev/null 2>&1; then
     xrdb -merge /home/$USERNAME/.Xresources
 fi
 
@@ -699,7 +700,7 @@ unset PROMPT_COMMAND 2>/dev/null
 export PS1='\[\033[1;31m\]┌──(\[\033[1;91m\]\u㉿\h\[\033[1;31m\])-[\[\033[1;96m\]\w\[\033[1;31m\]]\n└─\[\033[1;91m\]#\[\033[0m\] '
 EOF
 
-
+# Di bagian /etc/bash.bashrc, ganti:
 cat > /etc/bash.bashrc <<'EOF'
 # /etc/bash.bashrc - Global Bash Configuration (LeakOS)
 
@@ -748,7 +749,7 @@ alias free='free -m'
 # =========================================================
 # AUTO LOAD XRESOURCES
 # =========================================================
-if [[ -n "$DISPLAY" ]] && command -v xrdb >/dev/null 2>&1; then
+if [[ -n "\${DISPLAY:-}" ]] && command -v xrdb >/dev/null 2>&1; then
     [ -f "$HOME/.Xresources" ] && xrdb -merge "$HOME/.Xresources"
 fi
 
@@ -760,8 +761,6 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 EOF
-
-
 
 
 cat > /etc/sudoers << 'SUDOERS'
