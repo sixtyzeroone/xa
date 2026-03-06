@@ -466,32 +466,11 @@ mkdir -p /mnt/leakos/dev/pts
 mkdir -p /mnt/leakos/run/dbus
 mkdir -p /mnt/leakos/run/user
 
-# Unmount yang mungkin masih ter-mount
-umount -R /mnt/leakos/dev 2>/dev/null || true
-umount -R /mnt/leakos/proc 2>/dev/null || true
-umount -R /mnt/leakos/sys 2>/dev/null || true
-umount -R /mnt/leakos/run 2>/dev/null || true
-
-# Mount dengan urutan yang benar
-mount --rbind /dev /mnt/leakos/dev
-mount --make-rslave /mnt/leakos/dev
-
-# Mount devpts dengan opsi yang benar untuk PTY
-mount -t devpts -o gid=5,mode=620,newinstance,ptmxmode=0666 devpts /mnt/leakos/dev/pts
-
-# Buat symlink ptmx jika belum ada
-if [ ! -L /mnt/leakos/dev/ptmx ]; then
-    ln -sf /dev/pts/ptmx /mnt/leakos/dev/ptmx
-fi
-
-# Mount proc, sys, run
+mount --bind /dev /mnt/leakos/dev
+mount --bind /dev/pts /mnt/leakos/dev/pts
 mount -t proc proc /mnt/leakos/proc
 mount -t sysfs sysfs /mnt/leakos/sys
-mount --rbind /run /mnt/leakos/run
-mount --make-rslave /mnt/leakos/run
-
-# Mount tmpfs untuk /tmp
-mount -t tmpfs tmpfs /mnt/leakos/tmp
+mount --bind /run /mnt/leakos/run
 
 # Verifikasi mounting
 echo -e "${GREEN}Verifikasi mount points:${NC}"
@@ -821,6 +800,7 @@ tmpfs /tmp tmpfs defaults,noatime,mode=1777 0 0
 tmpfs /run tmpfs defaults,noatime,mode=0755,nodev,nosuid 0 0
 proc /proc proc defaults 0 0
 sysfs /sys sysfs defaults 0 0
+devpts   /dev/pts   devpts   gid=5,mode=620   0 0
 EOT
 
 cat > /etc/hosts <<EOT
