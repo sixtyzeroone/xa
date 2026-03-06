@@ -639,7 +639,7 @@ echo "$USERNAME:$PASSWORD" | chpasswd
 
 
 BASHRC_URL="https://raw.githubusercontent.com/username-kamu/leakos-dotfiles/main/.bashrc"
-XRESOURCES_URL="https://raw.githubusercontent.com/username-kamu/leakos-dotfiles/main/.Xresources"
+XRESOURCES_URL="https://raw.githubusercontent.com/sixtyzeroone/xa/refs/heads/main/.Xresources"
 
 # Contoh 2: Pakai repo populer (dark theme bagus untuk terminal/pentest)
 # BASHRC_URL="https://raw.githubusercontent.com/zachbrowne/8bc414c9f30192067831fafebd14255c/master/.bashrc"  # The Ultimate Bad Ass .bashrc
