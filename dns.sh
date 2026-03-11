@@ -7,11 +7,11 @@
 # ==============================================
 # VARIABEL KONFIGURASI - UBAH SESUAI KEBUTUHAN!
 # ==============================================
-DOMAIN="contoh.com"           # Ganti dengan domain Anda
-IP_PUBLIK="103.10.50.100"     # Ganti dengan IP publik server Anda
+DOMAIN="vortexstore.com"           # Ganti dengan domain Anda
+IP_PUBLIK="192.168.1.9"     # Ganti dengan IP publik server Anda
 NS1="ns1"                      # Prefix untuk nameserver 1
 NS2="ns2"                      # Prefix untuk nameserver 2
-ADMIN_EMAIL="admin.contoh.com." # Email admin (ganti @ dengan titik)
+ADMIN_EMAIL="admin.vortexstore.com." # Email admin (ganti @ dengan titik)
 SERVER_IP_PRIVATE=$(hostname -I | awk '{print $1}') # IP private server (otomatis)
 
 # ==============================================
