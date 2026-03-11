@@ -7,11 +7,11 @@
 # ==============================================
 # VARIABEL KONFIGURASI - UBAH SESUAI KEBUTUHAN!
 # ==============================================
-DOMAIN="vortexstore.com"           # Ganti dengan domain Anda
-IP_PUBLIK="192.168.1.9"     # Ganti dengan IP publik server Anda
+DOMAIN="contoh.com"           # Ganti dengan domain Anda
+IP_PUBLIK="103.10.50.100"     # Ganti dengan IP publik server Anda
 NS1="ns1"                      # Prefix untuk nameserver 1
 NS2="ns2"                      # Prefix untuk nameserver 2
-ADMIN_EMAIL="admin.vortexstore.com." # Email admin (ganti @ dengan titik)
+ADMIN_EMAIL="admin.contoh.com." # Email admin (ganti @ dengan titik)
 SERVER_IP_PRIVATE=$(hostname -I | awk '{print $1}') # IP private server (otomatis)
 
 # ==============================================
@@ -89,8 +89,8 @@ fi
 # BACKUP KONFIGURASI ASLI
 # ==============================================
 print_info "Membackup konfigurasi asli..."
-cp /etc/bind/named.conf.options /etc/bind/named.conf.options.backup
-cp /etc/bind/named.conf.local /etc/bind/named.conf.local.backup
+cp /etc/bind/named.conf.options /etc/bind/named.conf.options.backup 2>/dev/null
+cp /etc/bind/named.conf.local /etc/bind/named.conf.local.backup 2>/dev/null
 print_success "Backup selesai"
 
 # ==============================================
@@ -98,7 +98,7 @@ print_success "Backup selesai"
 # ==============================================
 print_info "Mengkonfigurasi named.conf.options..."
 
-cat > /etc/bind/named.conf.options << EOF
+cat > /etc/bind/named.conf.options << 'EOF'
 options {
         directory "/var/cache/bind";
         
@@ -158,6 +158,12 @@ print_success "named.conf.options selesai"
 # ==============================================
 print_info "Mengkonfigurasi named.conf.local..."
 
+# Ekstrak oktet IP untuk reverse zone
+IP1=$(echo $IP_PUBLIK | cut -d'.' -f1)
+IP2=$(echo $IP_PUBLIK | cut -d'.' -f2)
+IP3=$(echo $IP_PUBLIK | cut -d'.' -f3)
+IP4=$(echo $IP_PUBLIK | cut -d'.' -f4)
+
 cat > /etc/bind/named.conf.local << EOF
 //
 // Zona Forward untuk domain $DOMAIN
@@ -173,10 +179,9 @@ zone "$DOMAIN" {
 //
 // Zona Reverse untuk IP $IP_PUBLIK
 //
-// Mengambil 3 oktet pertama untuk reverse zone
-$(echo $IP_PUBLIK | awk -F'.' '{print "zone \""$3"."$2"."$1".in-addr.arpa\" {")}
+zone "$IP3.$IP2.$IP1.in-addr.arpa" {
     type master;
-    file "/etc/bind/db.$(echo $IP_PUBLIK | awk -F'.' '{print $1"."$2"."$3}')";
+    file "/etc/bind/db.$IP1.$IP2.$IP3";
     allow-query { any; };
     allow-transfer { none; };
 };
@@ -242,12 +247,6 @@ print_success "File zona forward selesai"
 # ==============================================
 print_info "Membuat file zona reverse..."
 
-# Ekstrak oktet IP
-IP1=$(echo $IP_PUBLIK | cut -d'.' -f1)
-IP2=$(echo $IP_PUBLIK | cut -d'.' -f2)
-IP3=$(echo $IP_PUBLIK | cut -d'.' -f3)
-IP4=$(echo $IP_PUBLIK | cut -d'.' -f4)
-
 cat > /etc/bind/db.$IP1.$IP2.$IP3 << EOF
 ; Reverse zone untuk $IP1.$IP2.$IP3.0/24
 \$TTL    604800
@@ -276,15 +275,15 @@ print_success "File zona reverse selesai"
 # SET PERMISSION
 # ==============================================
 print_info "Mengatur permission file..."
-chown bind:bind /etc/bind/db.$DOMAIN
-chown bind:bind /etc/bind/db.$IP1.$IP2.$IP3
-chmod 644 /etc/bind/db.$DOMAIN
-chmod 644 /etc/bind/db.$IP1.$IP2.$IP3
+chown bind:bind /etc/bind/db.$DOMAIN 2>/dev/null
+chown bind:bind /etc/bind/db.$IP1.$IP2.$IP3 2>/dev/null
+chmod 644 /etc/bind/db.$DOMAIN 2>/dev/null
+chmod 644 /etc/bind/db.$IP1.$IP2.$IP3 2>/dev/null
 
 # Buat direktori log
 mkdir -p /var/log/named
-chown bind:bind /var/log/named
-chmod 755 /var/log/named
+chown bind:bind /var/log/named 2>/dev/null
+chmod 755 /var/log/named 2>/dev/null
 
 print_success "Permission selesai"
 
@@ -356,14 +355,22 @@ if command -v ufw > /dev/null 2>&1; then
     print_success "Firewall UFW dikonfigurasi"
 else
     # Alternatif iptables jika ufw tidak ada
-    iptables -C INPUT -p udp --dport 53 -j ACCEPT 2>/dev/null || iptables -A INPUT -p udp --dport 53 -j ACCEPT
-    iptables -C INPUT -p tcp --dport 53 -j ACCEPT 2>/dev/null || iptables -A INPUT -p tcp --dport 53 -j ACCEPT
-    
-    # Simpan iptables rules
-    if command -v iptables-save > /dev/null 2>&1; then
-        iptables-save > /etc/iptables/rules.v4 2>/dev/null || iptables-save > /etc/iptables.up.rules
+    # Cek apakah iptables tersedia
+    if command -v iptables > /dev/null 2>&1; then
+        iptables -C INPUT -p udp --dport 53 -j ACCEPT 2>/dev/null || iptables -A INPUT -p udp --dport 53 -j ACCEPT
+        iptables -C INPUT -p tcp --dport 53 -j ACCEPT 2>/dev/null || iptables -A INPUT -p tcp --dport 53 -j ACCEPT
+        
+        # Simpan iptables rules
+        if command -v iptables-save > /dev/null 2>&1; then
+            # Coba simpan dengan berbagai cara
+            iptables-save > /etc/iptables/rules.v4 2>/dev/null || \
+            iptables-save > /etc/iptables.up.rules 2>/dev/null || \
+            echo "iptables rules tidak disimpan permanen"
+        fi
+        print_success "Iptables dikonfigurasi"
+    else
+        print_info "Iptables tidak ditemukan, lewati konfigurasi firewall"
     fi
-    print_success "Iptables dikonfigurasi"
 fi
 
 # ==============================================
@@ -432,3 +439,12 @@ echo ""
 print_info "Jangan lupa untuk menaikkan SERIAL number di file zona"
 print_info "setiap kali Anda mengubah record DNS secara manual!"
 print_line
+
+# Tampilkan informasi IP
+echo ""
+print_info "Ringkasan Konfigurasi:"
+echo "Domain            : $DOMAIN"
+echo "IP Publik         : $IP_PUBLIK"
+echo "Nameserver        : $NS1.$DOMAIN, $NS2.$DOMAIN"
+echo "Serial Number     : $SERIAL"
+echo ""
