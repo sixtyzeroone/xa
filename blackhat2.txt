@@ -22,7 +22,7 @@
 =================================================================
                     L A Z Y   F R A M E W O R K
 =================================================================
-              "Work Smarter, Not Harder - Automated Security"
+         "Work Smarter, Not Harder - Automated Security"
 =================================================================
 
 ┌──[ LAZY FRAMEWORK ]─[ Module: Penetration Testing ]
