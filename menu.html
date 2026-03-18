@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+
+<!-- SEO Meta Tags -->
+<meta name="description" content="VortexStore - Top up game termurah & tercepat di Indonesia 2026. Diamond ML, UC FF, Shell COD, Voucher Digital, Pulsa & Data all operator. Proses instan 24 jam, aman, terpercaya. Mulai dari Rp5.000!">
+<meta name="keywords" content="top up game murah, top up ml, diamond mobile legends, top up free fire, uc ff, top up pubg, valorant points, voucher spotify netflix, pulsa murah, top up game indonesia">
+<meta name="robots" content="index, follow">
+<meta name="author" content="VortexStore Interactive">
+<meta name="language" content="id">
+
+<!-- Open Graph Tags (untuk social sharing) -->
+<meta property="og:title" content="VortexStore | Top Up Game Termurah & Tercepat 24 Jam">
+<meta property="og:description" content="Level up sekarang! Top up Diamond ML, UC FF, Genshin, Valorant, voucher Netflix/Spotify, pulsa & paket data instan. Harga paling murah, proses cepat, aman & terjamin.">
+<meta property="og:image" content="https://yourdomain.com/assets/img/vortex-og.jpg"> <!-- Ganti dengan gambar OG ideal (1200x630 px) -->
+<meta property="og:url" content="https://yourdomain.com/"> <!-- Ganti dengan URL asli situs -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="VortexStore">
+<meta property="og:locale" content="id_ID">
+
+<!-- Twitter Card (opsional tapi bagus untuk X/Twitter) -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="VortexStore | Top Up Game Termurah & Tercepat">
+<meta name="twitter:description" content="Top up game favoritmu dengan harga murah & proses instan 24 jam nonstop!">
+<meta name="twitter:image" content="https://yourdomain.com/assets/img/vortex-og.jpg">
+
+<!-- Tambahan modern (opsional tapi recommended) -->
+<meta name="theme-color" content="#00f2fe"> <!-- Sesuai warna primary kamu -->
+<meta name="msapplication-TileColor" content="#00f2fe">
+<link rel="canonical" href="https://yourdomain.com/">
+
+
+    <title>VortexStore | Premium Topup</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+    <style>
+        :root {
+            --primary: #00f2fe;
+            --bg: #05070a;
+            --glass: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --nav-height: 65px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background-color: var(--bg); color: white; overflow-x: hidden; }
+
+        nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 5%; background: rgba(5, 7, 10, 0.85); backdrop-filter: blur(15px);
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 2000;
+            border-bottom: 1px solid var(--glass-border); height: var(--nav-height);
+        }
+        .logo { font-family: 'Orbitron', sans-serif; font-size: 1.15rem; }
+        .logo span { color: var(--primary); }
+        .btn-login { 
+            border: 1px solid var(--primary); 
+            padding: 5px 15px; 
+            border-radius: 20px; 
+            color: var(--primary); 
+            font-size: 0.7rem; 
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .hero {
+            height: 60vh;
+            min-height: 400px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-swiper {
+            width: 100%;
+            height: 100%;
+        }
+        .hero-slide {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .hero-content {
+            z-index: 10;
+            padding: 20px;
+            background: rgba(5,7,10,0.6);
+            border-radius: 16px;
+            max-width: 90%;
+        }
+        .hero h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px var(--primary);
+        }
+        .hero p {
+            font-size: 1rem;
+            color: #ddd;
+        }
+
+        .hero-slide::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(5,7,10,0.3), rgba(5,7,10,0.8));
+            z-index: 1;
+        }
+
+        .category-badges {
+            display: flex; gap: 8px; overflow-x: auto; padding: 12px 5%;
+            scrollbar-width: none; background: #05070a;
+            position: sticky; top: var(--nav-height); z-index: 1000;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .category-badges::-webkit-scrollbar { display: none; }
+        .cat-badge {
+            flex: 0 0 auto; background: rgba(30,30,40,0.6); border: 1px solid var(--glass-border);
+            border-radius: 999px; padding: 7px 18px; font-size: 0.75rem; color: #aaa; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .cat-badge.active { background: var(--primary); color: #000; font-weight: 700; border-color: var(--primary); }
+
+        section { padding: 15px 5%; }
+        .section-title { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; border-left: 4px solid var(--primary); padding-left: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+
+        .swiper { padding-bottom: 45px !important; }
+        .swiper-pagination-bullet { background: #444 !important; opacity: 1; }
+        .swiper-pagination-bullet-active { background: var(--primary) !important; width: 20px; border-radius: 5px; }
+
+        .game-card {
+            background: var(--glass); border-radius: 15px; overflow: hidden;
+            border: 1px solid var(--glass-border); position: relative; aspect-ratio: 3 / 4.8;
+        }
+        .game-card img { 
+            width: 100%; height: 100%; object-fit: cover; 
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .game-card img.loaded {
+            opacity: 1;
+        }
+        .card-badge {
+            position: absolute; top: 10px; left: 10px; z-index: 10;
+            background: #ff3b3b; color: white; font-size: 0.6rem; padding: 3px 9px;
+            border-radius: 5px; font-weight: 800; text-transform: uppercase;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .card-badge:hover { background: #d32f2f; transform: scale(1.08); }
+
+        .card-info {
+            position: absolute; bottom: 0; left: 0; right: 0; padding: 12px 8px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9) 60%); text-align: center;
+        }
+        .card-info h3 { font-size: 0.75rem; margin-bottom: 8px; }
+        .btn-pilih {
+            width: 100%; padding: 7px; font-size: 0.7rem; border: none;
+            border-radius: 8px; background: var(--primary); color: #000; font-weight: 800;
+            cursor: pointer;
+        }
+
+        .voucher-card { 
+            background: var(--glass); border-radius: 12px; border: 1px solid var(--glass-border); 
+            aspect-ratio: 1/1; overflow: hidden; position: relative; 
+        }
+        .voucher-card img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .voucher-card img.loaded {
+            opacity: 1;
+        }
+        .voucher-card img.pulsa-img {
+            object-fit: contain; 
+            padding: 12px; 
+            background: #fff;
+        }
+        .voucher-title { 
+            position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.85); 
+            padding: 8px; font-size: 0.7rem; text-align: center; font-weight: 600;
+            z-index: 5;
+        }
+
+        /* Skeleton styles */
+        .skeleton {
+            position: relative;
+        }
+        .skeleton::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(110deg, #2a2a3a 30%, #3a3a4a 50%, #2a2a3a 70%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            z-index: 10;
+            pointer-events: none;
+            border-radius: 12px;
+        }
+        .skeleton .voucher-title {
+            background: rgba(0,0,0,0.95);
+            z-index: 15;
+        }
+        .skeleton .voucher-title .skeleton-text {
+            height: 12px;
+            background: #444;
+            border-radius: 6px;
+            margin: 0 auto;
+            width: 60%;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .hidden-section { display: none !important; }
+        .hidden-slide { display: none !important; }
+
+        footer {
+            background: rgba(10, 12, 18, 0.95);
+            border-top: 1px solid var(--glass-border);
+            padding: 40px 5% 20px;
+            margin-top: 50px;
+        }
+       
+        .footer-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 40px;
+            text-align: left;
+        }
+       
+        .footer-info p {
+            font-size: 0.85rem;
+            color: #aaa;
+            margin-top: -15%;
+            line-height: 1.6;
+        }
+       
+        .footer-links h4, .footer-contact h4 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+       
+        .footer-links ul { list-style: none; }
+        .footer-links ul li { margin-bottom: 10px; }
+        .footer-links ul li a {
+            color: #ccc;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: 0.3s;
+        }
+        .footer-links ul li a:hover { color: var(--primary); padding-left: 5px; }
+       
+        .footer-contact p {
+            font-size: 0.85rem;
+            color: #ccc;
+            margin-bottom: 10px;
+        }
+       
+        .footer-bottom {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.75rem;
+            color: #555;
+        }
+       
+        .footer-logo-img {
+           height: 150px;
+            width: 150px;
+            display: block;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 0 10px rgba(0, 242, 254, 0.3));
+            margin-top: -20%;
+            border-radius: 50%;
+        }
+       
+        .blink-load {
+            animation: blinker 1.5s linear 3;
+        }
+       
+        @keyframes blinker {
+            50% { opacity: 0; text-shadow: none; }
+            100% { opacity: 1; text-shadow: 0 0 15px var(--primary); }
+        }
+
+        @media (max-width: 768px) {
+            .footer-container { grid-template-columns: 1fr; gap: 30px; }
+            .footer-info p { margin-top: -18%; }
+            .hero-slide { background-position: center; height: 60vh; background-repeat: no-repeat; }
+            .footer-logo-img { height: 180px; width: 210px; }
+            .hero h1 { font-size: 1.8rem; }
+        }
+        
+        /* Search bar di navbar */
+        .search-container {
+        flex: 1;
+        max-width: 350px;
+        margin: 0 20px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        }
+        
+        .search-input {
+        width: 100%;
+        padding: 8px 40px 8px 16px;
+        border: 1px solid var(--glass-border);
+        border-radius: 30px;
+        background: var(--glass);
+        backdrop-filter: blur(10px);
+        color: white;
+        font-size: 0.85rem;
+        outline: none;
+        transition: all 0.3s;
+        }
+        
+        .search-input::placeholder {
+        color: #aaa;
+        }
+        
+        .search-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(0, 242, 254, 0.2);
+        }
+        
+        .search-btn {
+        position: absolute;
+        right: 8px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 6px;
+        color: var(--primary);
+        transition: transform 0.2s;
+        }
+        
+        .search-btn:hover {
+        transform: scale(1.15);
+        }
+        
+        /* Responsif mobile */
+        @media (max-width: 768px) {
+        .search-container {
+        max-width: 180px;
+        margin: 0 10px;
+        }
+        
+        .search-input {
+        width: 14.5vh;
+        font-size: 0.75rem;
+        padding: 6px 35px 6px 12px;
+        }
+        
+        .search-btn svg {
+        width: 18px;
+        height: 18px;
+        }
+        
+        .card-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 10;
+        background: linear-gradient(135deg, #ff3b3b, #ff6b6b);
+        color: white;
+        font-size: 0.65rem;
+        font-weight: 900;
+        padding: 4px 12px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 0 15px rgba(255, 59, 59, 0.6),
+        0 0 30px rgba(0, 242, 254, 0.4);  /* glow cyan mix */
+        border: 1px solid rgba(0, 242, 254, 0.5);
+        transition: all 0.3s ease;
+        backdrop-filter: blur(4px);
+        }
+        
+        .card-badge:hover {
+        transform: scale(1.15) translateY(-2px);
+        box-shadow: 0 0 25px rgba(255, 59, 59, 0.9),
+        0 0 50px rgba(0, 242, 254, 0.7);
+        
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo blink-load">VORTEX<span>STORE</span></div>
+<!-- Search bar baru -->
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Cari game" class="search-input">
+        <button class="search-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21 21L16.65 16.65M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
+    </div>
+        <a href="login.html" class="btn-login">LOGIN</a>
+    </nav>
+
+    <div class="hero">
+        <div class="swiper hero-swiper">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide hero-slide" style="background-image: url('assets/img/vortex.png');">
+                    <div class="hero-content">
+                        <h1>LEVEL UP NOW</h1>
+                        <p>Top Up Game Tercepat & Termurah 24 Jam</p>
+                    </div>
+                </div>
+                <div class="swiper-slide hero-slide" style="background-image: url('assets/img/vortex-wall3.png');">
+                    <div class="hero-content">
+                        <h1>VORTEX POWER</h1>
+                        <p>Aman, Cepat, Terpercaya</p>
+                    </div>
+                </div>
+            </div>
+            <div class="swiper-pagination hero-pagination"></div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+        </div>
+    </div>
+
+    <div class="category-badges">
+        <span class="cat-badge active" data-filter="all">Semua</span>
+        <span class="cat-badge" data-filter="PROMO">PROMO</span>
+        <span class="cat-badge" data-filter="HOT">HOT</span>
+        <span class="cat-badge" data-filter="NEW">NEW</span>
+        <span class="cat-badge" data-filter="SALE">SALE</span>
+        <span class="cat-badge" data-filter="PULSA">PULSA</span>
+    </div>
+
+    <section id="sec-populer">
+        <div class="section-title">🔥 GAME POPULER</div>
+        <div class="swiper swiperPopuler">
+            <div class="swiper-wrapper" id="list-populer"></div>
+            <div class="swiper-pagination"></div>
+        </div>
+    </section>
+
+    <section id="sec-terbaru">
+        <div class="section-title">✨ GAME TERBARU</div>
+        <div class="swiper swiperTerbaru">
+            <div class="swiper-wrapper" id="list-terbaru"></div>
+            <div class="swiper-pagination"></div>
+        </div>
+    </section>
+
+    <section id="sec-pc">
+        <div class="section-title">🖥️ GAME PC POPULER</div>
+        <div class="swiper swiperPC">
+            <div class="swiper-wrapper" id="list-pc"></div>
+            <div class="swiper-pagination"></div>
+        </div>
+    </section>
+
+    <section id="sec-voucher">
+        <div class="section-title">🎫 VOUCHER DIGITAL</div>
+        <div class="swiper swiperVoucher">
+            <div class="swiper-wrapper" id="list-voucher"></div>
+            <div class="swiper-pagination"></div>
+        </div>
+    </section>
+    
+    <section id="sec-pulsa">
+        <div class="section-title">📱 PULSA & DATA</div>
+        <div class="swiper swiperPulsa">
+            <div class="swiper-wrapper" id="list-pulsa"></div>
+            <div class="swiper-pagination"></div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-container">
+            <div class="footer-info">
+                <img src="assets/img/vortex-wall2.png" alt="VortexStore Logo" class="footer-logo-img">
+                <p>VortexStore adalah platform top up game dan voucher digital termurah, tercepat, dan terpercaya di Indonesia. Nikmati layanan 24 jam nonstop dengan berbagai pilihan metode pembayaran instan.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Navigasi</h4>
+                <ul>
+                    <li><a href="#">Halaman Utama</a></li>
+                    <li><a href="#">Daftar Harga</a></li>
+                    <li><a href="#">Lacak Pesanan</a></li>
+                    <li><a href="#">Syarat & Ketentuan</a></li>
+                </ul>
+            </div>
+            <div class="footer-contact">
+                <h4>Bantuan</h4>
+                <p>WhatsApp: +62 812-3456-7890</p>
+                <p>Email: support@vortexstore.id</p>
+                <p>Jam Kerja: 24/7 Nonstop</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            © 2026 VortexStore Interactive. All Rights Reserved.
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script>
+        // Data
+        const dbPopuler = [
+            { n: "Mobile Legends", i: "assets/img/ml.jpg", b: "HOT" },
+            { n: "Clash Of Clans", i: "assets/img/coc.png", b: "HOT" },
+            { n: "Honor of Kings", i: "assets/img/hok.png", b: "PROMO" },
+            { n: "Valorant", i: "assets/img/valo.jpg", b: "PROMO" },
+            { n: "Free Fire", i: "assets/img/freefire.png", b: "SALE" },
+            { n: "PUBG Mobile", i: "assets/img/pubg.jpg", b: "HOT" },
+            { n: "Arena Of Valor", i: "assets/img/aov.png", b: "HOT" }
+        ];
+        
+        const dbTerbaru = [
+            { n: "Apex Legends", i: "assets/img/apex.jpeg", b: "PROMO" },
+            { n: "Genshin Impact", i: "assets/img/genshin.jpeg", b: "NEW" },
+            { n: "Call of Duty", i: "assets/img/callof.png", b: "PROMO" },
+            { n: "Roblox", i: "assets/img/roblox.jpg", b: "HOT" },
+            { n: "Delta Force", i: "assets/img/delta.png", b: "HOT" }
+
+        ];
+        
+        const dbVoucher = [
+            { n: "Spotify", i: "https://images.unsplash.com/photo-1614680376593-902f74cf0d41?w=400" },
+            { n: "Netflix", i: "https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?w=400" },
+            { n: "PlayStation", i: "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400" },
+            { n: "Google Play", i: "assets/img/googleplay.png" }
+        ];
+        
+        const dbPC = [
+            { n: "Point Blank", i: "assets/img/pb.png", b: "PC" },
+            { n: "Valorant", i: "assets/img/valo.jpg", b: "PC" },
+            { n: "Genshin Impact PC", i: "https://images.unsplash.com/photo-1614027126273-07619213568a?w=500", b: "PC" },
+            { n: "Ragnarok Online", i: "https://images.igdb.com/igdb/image/upload/t_cover_big/co2mvt.jpg", b: "PC" },
+            { n: "Counter-Strike 2", i: "assets/img/cs.jpg", b: "HOT" },
+            { n: "Dota 2", i: "assets/img/dota.jpg", b: "PC" },
+            { n: "Lost Ark", i: "https://images.igdb.com/igdb/image/upload/t_cover_big/co4t2a.jpg", b: "NEW" }
+        ];
+        
+        const dbPulsa = [
+            { n: "Telkomsel", i: "https://upload.wikimedia.org/wikipedia/commons/b/bc/Telkomsel_2021_logo.svg" },
+            { n: "Indosat Ooredoo", i: "https://upload.wikimedia.org/wikipedia/id/a/a8/Indosat_Ooredoo_Hutchison_logo.svg" },
+            { n: "XL Axiata", i: "https://upload.wikimedia.org/wikipedia/en/5/55/XL_Axiata_logo_2016.svg" },
+            { n: "Tri (3)", i: "https://upload.wikimedia.org/wikipedia/commons/a/ad/Three_Logo.svg" },
+            { n: "Smartfren", i: "https://upload.wikimedia.org/wikipedia/commons/d/d4/Smartfren_logo.svg" }
+        ];
+
+        // Preload image function
+        function preloadImage(src) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(src);
+                img.onerror = () => reject(src);
+                img.src = src;
+            });
+        }
+
+        // Render skeletons for voucher & pulsa
+        function renderSkeletons() {
+            const count = 5;
+            const skeletonHTML = Array(count).fill(`
+                <div class="swiper-slide">
+                    <div class="voucher-card skeleton">
+                        <div class="voucher-title">
+                            <div class="skeleton-text"></div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('list-voucher').innerHTML = skeletonHTML;
+            document.getElementById('list-pulsa').innerHTML = skeletonHTML;
+        }
+
+        // Render all game cards
+        function renderGameCards() {
+            document.getElementById('list-populer').innerHTML = dbPopuler.map(g => `
+                <div class="swiper-slide" data-badge="${g.b}">
+                    <div class="game-card">
+                        <div class="card-badge">${g.b}</div>
+                        <img src="${g.i}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.src='https://via.placeholder.com/300x400?text=Image+Not+Found'; this.classList.add('loaded')">
+                        <div class="card-info"><h3>${g.n}</h3><button class="btn-pilih">Pilih</button></div>
+                    </div>
+                </div>`).join('');
+            
+            document.getElementById('list-terbaru').innerHTML = dbTerbaru.map(g => `
+                <div class="swiper-slide" data-badge="${g.b}">
+                    <div class="game-card">
+                        <div class="card-badge">${g.b}</div>
+                        <img src="${g.i}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.src='https://via.placeholder.com/300x400?text=Image+Not+Found'; this.classList.add('loaded')">
+                        <div class="card-info"><h3>${g.n}</h3><button class="btn-pilih">Pilih</button></div>
+                    </div>
+                </div>`).join('');
+
+            document.getElementById('list-pc').innerHTML = dbPC.map(g => `
+                <div class="swiper-slide" data-badge="${g.b}">
+                    <div class="game-card">
+                        <div class="card-badge">${g.b}</div>
+                        <img src="${g.i}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.src='https://via.placeholder.com/300x400?text=Image+Not+Found'; this.classList.add('loaded')">
+                        <div class="card-info"><h3>${g.n}</h3><button class="btn-pilih">Pilih</button></div>
+                    </div>
+                </div>`).join('');
+        }
+
+        // Render voucher & pulsa with lazy loading
+        async function renderVoucherAndPulsa() {
+            document.getElementById('list-voucher').innerHTML = dbVoucher.map((v, index) => `
+                <div class="swiper-slide">
+                    <div class="voucher-card skeleton" id="voucher-${index}">
+                        <img data-src="${v.i}" class="lazy-img">
+                        <div class="voucher-title">${v.n}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('list-pulsa').innerHTML = dbPulsa.map((p, index) => `
+                <div class="swiper-slide">
+                    <div class="voucher-card skeleton" id="pulsa-${index}">
+                        <img data-src="${p.i}" class="lazy-img pulsa-img">
+                        <div class="voucher-title">${p.n}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            const lazyImages = document.querySelectorAll('.lazy-img');
+            for (let i = 0; i < lazyImages.length; i++) {
+                const img = lazyImages[i];
+                const src = img.dataset.src;
+                const card = img.closest('.voucher-card');
+                try {
+                    await preloadImage(src);
+                    setTimeout(() => {
+                        img.src = src;
+                        img.classList.add('loaded');
+                        card.classList.remove('skeleton');
+                    }, i * 50);
+                } catch (e) {
+                    img.src = 'https://via.placeholder.com/300x300?text=Error';
+                    img.classList.add('loaded');
+                    card.classList.remove('skeleton');
+                }
+            }
+
+            swVoucher.update();
+            swPulsa.update();
+            swVoucher.updateSize();
+            swPulsa.updateSize();
+        }
+
+        // Render everything
+        async function renderAllContent() {
+            renderGameCards();
+            await renderVoucherAndPulsa();
+
+            swPopuler.update();
+            swTerbaru.update();
+            swPC.update();
+        }
+
+        // Swiper config
+        const config = { 
+            slidesPerView: 2.3, 
+            spaceBetween: 12, 
+            pagination: { el: ".swiper-pagination", clickable: true }, 
+            breakpoints: { 768: { slidesPerView: 5 } } 
+        };
+        
+        const swPopuler = new Swiper(".swiperPopuler", config);
+        const swTerbaru = new Swiper(".swiperTerbaru", config);
+        const swPC = new Swiper(".swiperPC", config);
+        const swVoucher = new Swiper(".swiperVoucher", { ...config, slidesPerView: 3.2 });
+        const swPulsa = new Swiper(".swiperPulsa", { ...config, slidesPerView: 3.2 });
+        
+        new Swiper(".hero-swiper", {
+            loop: true,
+            autoplay: { delay: 5000, disableOnInteraction: false },
+            pagination: { el: ".hero-pagination", clickable: true },
+            navigation: { nextEl: ".swiper-button-next", prevEl: ".swiper-button-prev" },
+            effect: "fade",
+            speed: 1000
+        });
+
+        // Start with skeletons
+        renderSkeletons();
+
+        // Load content after short delay
+        setTimeout(renderAllContent, 1200);
+
+        // Filter function
+        function applyFilter(filterValue) {
+            const isAll = filterValue === 'all';
+            const isPulsa = filterValue === 'PULSA';
+            
+            let visiblePopuler = 0;
+            document.querySelectorAll('.swiperPopuler .swiper-slide').forEach(slide => {
+                const badge = slide.dataset.badge;
+                if (isAll || badge === filterValue) {
+                    slide.classList.remove('hidden-slide');
+                    visiblePopuler++;
+                } else {
+                    slide.classList.add('hidden-slide');
+                }
+            });
+            
+            document.getElementById('sec-populer').classList.toggle('hidden-section', isPulsa || (visiblePopuler === 0 && !isAll));
+            document.getElementById('sec-terbaru').classList.toggle('hidden-section', isPulsa);
+            document.getElementById('sec-pc').classList.toggle('hidden-section', !isAll && filterValue !== 'PC');
+            document.getElementById('sec-voucher').classList.toggle('hidden-section', !isAll);
+            document.getElementById('sec-pulsa').classList.toggle('hidden-section', !isPulsa);
+            
+            swPopuler.update();
+            swTerbaru.update();
+            swPC.update();
+            swVoucher.update();
+            swPulsa.update();
+            swPopuler.slideTo(0);
+        }
+        
+        applyFilter('all');
+        
+        document.querySelectorAll('.cat-badge').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.cat-badge').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                applyFilter(this.dataset.filter);
+            });
+        });
+        
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('card-badge')) {
+                const badgeText = e.target.textContent.trim();
+                applyFilter(badgeText);
+                document.querySelectorAll('.cat-badge').forEach(cb => {
+                    cb.classList.remove('active');
+                    if (cb.dataset.filter === badgeText) cb.classList.add('active');
+                });
+            }
+        });
+    </script>
+    
+    <script>
+    
+    // Tambahkan di akhir script atau di tempat yang sesuai
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+    const query = this.value.trim();
+    if (query) {
+    // Contoh: alert atau redirect ke halaman search
+    alert('Mencari: ' + query);
+    // Nanti bisa ganti jadi filter data atau buka halaman search.html?query=...
+    // Contoh filter sederhana di halaman ini:
+    // applyFilter(query.toUpperCase()); // kalau mau filter berdasarkan nama game
+    }
+    }
+    });
+    </script>
+</body>
+</html>
