@@ -1,0 +1,216 @@
+#!/bin/bash
+# ==============================================
+# Script: LeakOS-Mode Undercover Switcher (FIXED)
+# ==============================================
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+WINDOWS_WM_THEME="Windows"   # sesuaikan nama theme xfwm4
+DEFAULT_WM_THEME="Default"
+BACKUP_BASE="/root/kali_undercover_backups"
+JETBLUE_THEME_PATH="/usr/share/themes/Jetblue"
+TREEPATA_ICON_PATH="/usr/share/icons/Treepata"
+WINDOWS_WALLPAPER="/usr/share/backgrounds/leak/Windows-10.jpg"
+JETBLUE_WALLPAPER="/usr/share/backgrounds/leak/leak.png"
+
+check_root() {
+    if [[ $EUID -ne 0 ]]; then
+        echo -e "${RED}[!] Script ini harus dijalankan sebagai root${NC}"
+        exit 1
+    fi
+}
+
+# Fungsi restart panel yang lebih aman
+restart_panel() {
+    echo -e "${BLUE}[*] Menyegarkan Panel XFCE...${NC}"
+    pkill xfce4-panel
+    sleep 1
+    # Menjalankan panel di background tanpa mengunci terminal
+    (xfce4-panel > /dev/null 2>&1 &)
+}
+
+do_backup() {
+    local TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+    local CURRENT_BACKUP_DIR="$BACKUP_BASE/backup_$TIMESTAMP"
+    echo -e "${BLUE}[*] Membuat backup ke: $CURRENT_BACKUP_DIR${NC}"
+    mkdir -p "$CURRENT_BACKUP_DIR"
+    xfconf-query -c xsettings -p /Net/ThemeName > "$CURRENT_BACKUP_DIR/theme_name.txt" 2>/dev/null
+    xfconf-query -c xsettings -p /Net/IconThemeName > "$CURRENT_BACKUP_DIR/icon_name.txt" 2>/dev/null
+    [[ -f /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml ]] && cp /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml "$CURRENT_BACKUP_DIR/"
+}
+
+set_wm_theme() {
+    local theme="$1"
+    echo -e "${BLUE}[*] Mengatur Window Manager Theme: $theme${NC}"
+    xfconf-query -c xfwm4 -p /general/theme -s "$theme" 2>/dev/null
+}
+
+
+setup_terminal() {
+    local mode="$1" # 'windows' atau 'restore'
+    
+    for user_home in /home/*; do
+        local username=$(basename "$user_home")
+        local bashrc="$user_home/.bashrc"
+        local term_dir="$user_home/.config/xfce4/terminal"
+        
+        if [[ -d "$user_home" ]]; then
+            if [[ "$mode" == "windows" ]]; then
+                echo -e "${BLUE}[*] Mengubah Terminal menjadi CMD Asli untuk $username...${NC}"
+                
+                # 1. Konfigurasi Warna & Font (Fake10)
+                mkdir -p "$term_dir"
+                cat > "$term_dir/terminalrc" << EOF
+[Configuration]
+MiscAlwaysShowTabs=FALSE
+MiscBell=FALSE
+MiscBordersDefault=FALSE
+MiscCursorBlinks=TRUE
+MiscCursorShape=TERMINAL_CURSOR_SHAPE_BLOCK
+MiscDefaultGeometry=100x30
+MiscInheritGeometry=FALSE
+MiscMenubarDefault=FALSE
+MiscMouseAutohide=TRUE
+MiscToolbarDefault=FALSE
+
+FontName=Consolas 11
+
+ColorForeground=#C0C0C0
+ColorBackground=#000000
+ColorCursor=#FFFFFF
+
+MiscUseThemeColors=FALSE
+MiscBoldIsBright=TRUE
+
+BackgroundMode=TERMINAL_BACKGROUND_SOLID
+EOF
+
+                # 2. Tambahkan Banner & Prompt Windows di .bashrc
+                sed -i '/# CMD_STYLE_START/,/# CMD_STYLE_END/d' "$bashrc"
+                
+                cat >> "$bashrc" << 'EOF'
+# CMD_STYLE_START
+# Tampilkan Banner Microsoft Windows asli
+clear
+echo "Microsoft Windows [Version 10.0.16299.192]"
+echo "(c) 2017 Microsoft Corporation. All rights reserved."
+echo ""
+
+# Ubah format path / ke \ dan set prompt C:\>
+export PS1='C:\\\\Users\\\\$(whoami)> '
+
+# Alias agar perintah 'clear' di Linux tetap memunculkan banner
+alias cls='clear && echo "Microsoft Windows [Version 10.0.16299.192]" && echo "(c) 2017 Microsoft Corporation. All rights reserved." && echo ""'
+# CMD_STYLE_END
+EOF
+            else
+                echo -e "${YELLOW}[*] Mengembalikan Terminal ke standar...${NC}"
+                rm "$term_dir/terminalrc" 2>/dev/null
+                sed -i '/# CMD_STYLE_START/,/# CMD_STYLE_END/d' "$bashrc"
+            fi
+            chown "$username":"$username" "$term_dir/terminalrc" "$bashrc" 2>/dev/null
+        fi
+    done
+}
+
+
+
+# --- 1. SETUP WINDOW MANAGER (Settings -> Window Manager -> Style) ---
+setup_windows_panel() {
+    echo -e "${BLUE}[*] Mengkonfigurasi Taskbar Windows 10...${NC}"
+    xfconf-query -c xfce4-panel -p /panels/panel-1/position -s "p=8;x=0;y=0" 2>/dev/null
+    xfconf-query -c xfce4-panel -p /panels/panel-1/size -s 37 2>/dev/null
+    
+    local PLUGINS=$(xfconf-query -c xfce4-panel -p /panels/panel-1/plugin-ids 2>/dev/null)
+    for id in $PLUGINS; do
+        type=$(xfconf-query -c xfce4-panel -p /plugins/plugin-$id -v 2>/dev/null)
+        if [[ "$type" == *"tasklist"* ]]; then
+            xfconf-query -c xfce4-panel -p /plugins/plugin-$id/show-labels -s false 2>/dev/null
+        fi
+    done
+}
+
+set_wallpaper() {
+    local wp="$1"
+    if [[ -f "$wp" ]]; then
+        xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/workspace0/last-image -s "$wp" 2>/dev/null
+    fi
+}
+
+
+ update_whisker_icon() {
+
+    local icon_path="$1"
+
+    echo -e "${BLUE}[*] Mencari Whisker Menu dan mengganti icon...${NC}"
+
+
+    # 1. Ambil semua ID plugin yang ada di panel
+
+    local ids=$(xfconf-query -c xfce4-panel -p /plugins -l | grep "plugin-" | cut -d'/' -f3 | sort -u)
+
+
+    for id in $ids; do
+
+        # 2. Cek apakah plugin tersebut adalah whisker menu
+
+        type=$(xfconf-query -c xfce4-panel -p /plugins/$id -v 2>/dev/null)
+
+        
+
+        if [[ "$type" == *"whiskermenu"* ]]; then
+
+            echo -e "${GREEN}[+] Whisker Menu ditemukan pada $id. Mengubah icon...${NC}"
+
+            # 3. Ubah icon dan pastikan label dimatikan (hanya icon saja)
+
+            xfconf-query -c xfce4-panel -p /plugins/$id/button-icon -n -t string -s "$icon_path"
+
+            xfconf-query -c xfce4-panel -p /plugins/$id/show-button-title -n -t bool -s false
+
+        fi
+
+    done
+
+} 
+
+enable_undercover() {
+    check_root
+    if [[ -d "/usr/share/themes/Windows" ]]; then
+        do_backup
+        xfconf-query -c xsettings -p /Net/ThemeName -s "Windows" 2>/dev/null
+        [[ -d "/usr/share/icons/Windows" ]] && xfconf-query -c xsettings -p /Net/IconThemeName -s "Windows" 2>/dev/null
+        set_wm_theme "$WINDOWS_WM_THEME"   # 🔥 TAMBAHAN INI
+        update_whisker_icon "/usr/share/icons/Windows/start-menu.png"
+        setup_windows_panel
+        setup_terminal "windows"
+        set_wallpaper "$WINDOWS_WALLPAPER"
+        restart_panel
+        echo -e "${GREEN}[✓] Mode Undercover Aktif!${NC}"
+    else
+        echo -e "${RED}[!] Tema Windows tidak ditemukan!${NC}"
+    fi
+}
+
+disable_undercover() {
+    check_root
+    echo -e "${YELLOW}[+] Mengembalikan ke Jetblue...${NC}"
+    xfconf-query -c xfce4-panel -p /panels/panel-1/position -s "p=6;x=0;y=0" 2>/dev/null
+    xfconf-query -c xsettings -p /Net/ThemeName -s "Jetblue" 2>/dev/null
+    xfconf-query -c xsettings -p /Net/IconThemeName -s "Treepata" 2>/dev/null
+   set_wm_theme "$DEFAULT_WM_THEME"   # 🔥 BALIKIN
+    setup_terminal "restore"
+update_whisker_icon "/usr/share/icons/leakos-icon/apps/48/wine.png" # atau path icon LeakOS kamu
+    set_wallpaper "$JETBLUE_WALLPAPER"
+    restart_panel
+    echo -e "${GREEN}[✓] Kembali ke LeakOS Style.${NC}"
+}
+
+case "$1" in
+    --enable|-e)  enable_undercover ;;
+    --disable|-d) disable_undercover ;;
+    *) echo "Usage: sudo $0 --enable | --disable" ;;
+esac
