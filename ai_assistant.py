@@ -513,26 +513,21 @@ class AIAssistantWidget(QWidget):
         self._append_bubble("system", "Disconnected.")
 
     def _cleanup_worker(self):
-        """Clean up worker thread safely - FIXED for QThread destroyed error"""
+        """Clean up worker thread safely — hanya dipanggil dari main thread."""
         if self.worker:
             try:
                 self.worker.stop()
-                self.worker = None
             except:
                 pass
-        
+            self.worker = None
+
         if self.worker_thread and self.worker_thread.isRunning():
             try:
                 self.worker_thread.quit()
-                # Wait for thread to finish (max 1 second)
-                if not self.worker_thread.wait(1000):
-                    # Force terminate if still running
-                    self.worker_thread.terminate()
-                    self.worker_thread.wait(500)
+                self.worker_thread.wait(1500)  # Aman jika dipanggil dari main thread
             except:
                 pass
-            finally:
-                self.worker_thread = None
+        self.worker_thread = None
 
     def set_channel_active(self, active=True):
         """Set status channel active"""
@@ -658,12 +653,12 @@ class AIAssistantWidget(QWidget):
         self.chat_display.append("<br>")
         self.send_btn.setEnabled(True)
         self.stop_btn.setEnabled(False)
-        
-        # Clean up - but don't wait forever
+
+        # JANGAN wait() di sini — _on_done dipanggil dari dalam worker thread itu sendiri.
+        # Cukup quit(), lalu biarkan deleteLater() (sudah di-connect di _start_worker) yang bersihkan.
         if self.worker_thread and self.worker_thread.isRunning():
             self.worker_thread.quit()
-            self.worker_thread.wait(500)
-        
+
         self.worker = None
         self.worker_thread = None
 
@@ -673,12 +668,11 @@ class AIAssistantWidget(QWidget):
         )
         self.send_btn.setEnabled(True)
         self.stop_btn.setEnabled(False)
-        
-        # Clean up
+
+        # Sama seperti _on_done — jangan wait() dari dalam thread
         if self.worker_thread and self.worker_thread.isRunning():
             self.worker_thread.quit()
-            self.worker_thread.wait(500)
-        
+
         self.worker = None
         self.worker_thread = None
 
