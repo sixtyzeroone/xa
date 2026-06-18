@@ -1,0 +1,56 @@
+<resources>
+    <string name="app_name">VortexStore</string>
+        <!-- Authentication -->
+    <string name="login_title">Login</string>
+    <string name="register_title">Daftar Akun</string>
+    <string name="login_with_whatsapp">Lanjutkan dengan WhatsApp</string>
+    <string name="login_with_google">Lanjutkan dengan Google</string>
+    <string name="register_now">Belum punya akun? Daftar di sini</string>
+    <string name="login_now">Sudah punya akun? Login di sini</string>
+    
+    <!-- OTP -->
+    <string name="otp_title">Verifikasi WhatsApp</string>
+    <string name="otp_sent">Kode OTP telah dikirim ke</string>
+    <string name="otp_hint">Masukkan Kode OTP 6 Digit</string>
+    <string name="otp_resend">Kirim Ulang Kode</string>
+    <string name="otp_verify">Verifikasi</string>
+    
+    <!-- Dashboard -->
+    <string name="popular_games">🔥 Game Populer</string>
+    <string name="new_games">✨ Game Terbaru</string>
+    <string name="pc_games">🖥️ Game PC Populer</string>
+    <string name="vouchers">🎟️ Voucher Digital</string>
+    <string name="pulsa">📱 Pulsa &amp; Paket Data</string>
+    
+    <!-- Checkout -->
+    <string name="checkout_title">Checkout</string>
+    <string name="user_data">Data Pembeli</string>
+    <string name="payment_method">Metode Pembayaran</string>
+    <string name="total_payment">Total Pembayaran</string>
+    <string name="pay_now">Bayar Sekarang</string>
+    
+    <!-- Payment Methods -->
+    <string name="payment_qris">QRIS</string>
+    <string name="payment_ovo">OVO</string>
+    <string name="payment_gopay">GoPay</string>
+    <string name="payment_dana">DANA</string>
+    <string name="payment_va">Virtual Account</string>
+    
+    <!-- Common -->
+    <string name="select">Pilih</string>
+    <string name="back">Kembali</string>
+    <string name="loading">Memproses...</string>
+    <string name="error">Terjadi kesalahan</string>
+    <string name="success">Berhasil</string>
+    
+    <!-- Validation -->
+    <string name="field_required">Field wajib diisi</string>
+    <string name="invalid_email">Email tidak valid</string>
+    <string name="password_min">Password minimal 6 karakter</string>
+    <string name="password_mismatch">Password tidak cocok</string>
+    <!-- Firebase -->
+    <string name="google_api_key">545921675869-nnh16sj4t6h6p2evq0kqjaog7brjic45.apps.googleusercontent.com</string>
+    <!-- Google Sign-In -->
+
+     <string name="default_web_client_id">545921675869-nnh16sj4t6h6p2evq0kqjaog7brjic45.apps.googleusercontent.com</string>
+</resources>
